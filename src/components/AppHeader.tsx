@@ -13,7 +13,6 @@ export function AppHeader() {
 
   const navLinks = isStudent
     ? [
-        { to: "/dashboard", label: "Bosh sahifa" },
         { to: "/test/yaratish", label: "Oddiy test yaratish" },
         { to: "/test/daraja", label: "Darajani aniqlash" },
       ]
