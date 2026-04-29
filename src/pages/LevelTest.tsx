@@ -48,9 +48,7 @@ export default function LevelTest() {
           </div>
           <h1 className="text-3xl font-bold tracking-tight">Darajani aniqlash</h1>
         </div>
-        <p className="text-muted-foreground mb-8">
-          Fanni tanlang. AI sizning bilim darajangizni aniqlash uchun aynan 20 ta savol yaratadi. Ingliz tili uchun CEFR (A1–C2), boshqa fanlar uchun Milliy sertifikat darajalari beriladi.
-        </p>
+        <p className="text-muted-foreground mb-8">O'z darajangizni bilib oling. Teacher: Mubinjon.</p>
 
         <div className="rounded-2xl border border-border bg-card p-6 shadow-soft space-y-5">
           <div className="space-y-2">

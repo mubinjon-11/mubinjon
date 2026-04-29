@@ -75,7 +75,7 @@ export default function CreateTest() {
           </div>
           <h1 className="text-3xl font-bold tracking-tight">Oddiy test yaratish</h1>
         </div>
-        <p className="text-muted-foreground mb-8">Sinf, fan, mavzu va savollar sonini tanlang. Agar o'qituvchi testi bo'lsa, u ishlatiladi, aks holda AI yaratadi.</p>
+        <p className="text-muted-foreground mb-8">Testni yechib bilimingizni oshiring. Teacher: Mubinjon.</p>
 
         <div className="rounded-2xl border border-border bg-card p-6 shadow-soft space-y-5">
           <div className="space-y-2">
