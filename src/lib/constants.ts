@@ -1,5 +1,7 @@
 export const SUBJECTS = [
   "Ingliz tili",
+  "Rus tili",
+  "Koreys tili",
   "Matematika",
   "Fizika",
   "Kimyo",
@@ -11,7 +13,7 @@ export const SUBJECTS = [
   "Informatika",
 ] as const;
 
-export const LANGUAGE_SUBJECTS = ["Ingliz tili"];
+export const LANGUAGE_SUBJECTS = ["Ingliz tili", "Rus tili", "Koreys tili"];
 
 export const GRADES = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"];
 
