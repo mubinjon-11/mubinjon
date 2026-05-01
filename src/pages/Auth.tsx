@@ -12,8 +12,52 @@ import { toast } from "sonner";
 import { GraduationCap, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 
+// Faqat haqiqiy email provayderlari ruxsat etiladi
+const ALLOWED_EMAIL_DOMAINS = [
+  "gmail.com",
+  "googlemail.com",
+  "yahoo.com",
+  "yahoo.co.uk",
+  "outlook.com",
+  "hotmail.com",
+  "live.com",
+  "msn.com",
+  "icloud.com",
+  "me.com",
+  "mac.com",
+  "mail.ru",
+  "bk.ru",
+  "inbox.ru",
+  "list.ru",
+  "yandex.ru",
+  "yandex.com",
+  "ya.ru",
+  "proton.me",
+  "protonmail.com",
+  "umail.uz",
+  "mail.uz",
+  "exat.uz",
+  "bilimtest.uz",
+];
+
+const emailField = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .email("Noto'g'ri email format")
+  .refine(
+    (val) => {
+      const domain = val.split("@")[1];
+      if (!domain) return false;
+      // Domen tarkibida nuqta bo'lishi shart va oxiri kamida 2 harf
+      if (!/^[a-z0-9.-]+\.[a-z]{2,}$/.test(domain)) return false;
+      return ALLOWED_EMAIL_DOMAINS.includes(domain);
+    },
+    { message: "Faqat haqiqiy email manzil kiriting (masalan: gmail.com, mail.ru, yandex.ru)" }
+  );
+
 const signInSchema = z.object({
-  email: z.string().trim().email("Noto'g'ri email"),
+  email: emailField,
   password: z.string().min(6, "Parol kamida 6 ta belgi"),
 });
 
