@@ -3,7 +3,9 @@ import { Navigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Loader2 } from "lucide-react";
 
-export function ProtectedRoute({ children, role }: { children: ReactNode; role?: "oqituvchi" | "oquvchi" }) {
+type AllowedRole = "oqituvchi" | "oquvchi" | "admin";
+
+export function ProtectedRoute({ children, role }: { children: ReactNode; role?: AllowedRole | AllowedRole[] }) {
   const { user, role: userRole, loading } = useAuth();
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center">
@@ -11,8 +13,10 @@ export function ProtectedRoute({ children, role }: { children: ReactNode; role?:
     </div>
   );
   if (!user) return <Navigate to="/auth" replace />;
-  if (role && userRole !== role) {
-    return <Navigate to={userRole === "oqituvchi" ? "/oqituvchi" : "/dashboard"} replace />;
+  const allowed = Array.isArray(role) ? role : role ? [role] : [];
+  if (allowed.length > 0 && (!userRole || !allowed.includes(userRole as AllowedRole))) {
+    const fallback = userRole === "admin" ? "/admin" : userRole === "oqituvchi" ? "/oqituvchi" : "/dashboard";
+    return <Navigate to={fallback} replace />;
   }
   return <>{children}</>;
 }
