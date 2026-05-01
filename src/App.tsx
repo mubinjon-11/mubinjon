@@ -14,6 +14,7 @@ import TestRunner from "./pages/TestRunner";
 import ResultPage from "./pages/ResultPage";
 import TeacherDashboard from "./pages/TeacherDashboard";
 import CreateTeacherTest from "./pages/CreateTeacherTest";
+import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -29,17 +30,20 @@ const App = () => (
             <Route path="/" element={<Landing />} />
             <Route path="/auth" element={<Auth />} />
 
-            {/* Student routes */}
+            {/* Student routes (admin can also access) */}
             <Route path="/dashboard" element={<ProtectedRoute role="oquvchi"><StudentDashboard /></ProtectedRoute>} />
-            <Route path="/test/yaratish" element={<ProtectedRoute role="oquvchi"><CreateTest /></ProtectedRoute>} />
-            <Route path="/test/daraja" element={<ProtectedRoute role="oquvchi"><LevelTest /></ProtectedRoute>} />
-            <Route path="/test/ai/run" element={<ProtectedRoute role="oquvchi"><TestRunner /></ProtectedRoute>} />
-            <Route path="/test/:testId/run" element={<ProtectedRoute role="oquvchi"><TestRunner /></ProtectedRoute>} />
-            <Route path="/natija" element={<ProtectedRoute role="oquvchi"><ResultPage /></ProtectedRoute>} />
+            <Route path="/test/yaratish" element={<ProtectedRoute role={["oquvchi", "admin"]}><CreateTest /></ProtectedRoute>} />
+            <Route path="/test/daraja" element={<ProtectedRoute role={["oquvchi", "admin"]}><LevelTest /></ProtectedRoute>} />
+            <Route path="/test/ai/run" element={<ProtectedRoute role={["oquvchi", "admin"]}><TestRunner /></ProtectedRoute>} />
+            <Route path="/test/:testId/run" element={<ProtectedRoute role={["oquvchi", "admin"]}><TestRunner /></ProtectedRoute>} />
+            <Route path="/natija" element={<ProtectedRoute role={["oquvchi", "admin"]}><ResultPage /></ProtectedRoute>} />
 
-            {/* Teacher routes */}
+            {/* Teacher routes (admin can also access) */}
             <Route path="/oqituvchi" element={<ProtectedRoute role="oqituvchi"><TeacherDashboard /></ProtectedRoute>} />
-            <Route path="/oqituvchi/yangi" element={<ProtectedRoute role="oqituvchi"><CreateTeacherTest /></ProtectedRoute>} />
+            <Route path="/oqituvchi/yangi" element={<ProtectedRoute role={["oqituvchi", "admin"]}><CreateTeacherTest /></ProtectedRoute>} />
+
+            {/* Admin route */}
+            <Route path="/admin" element={<ProtectedRoute role="admin"><AdminDashboard /></ProtectedRoute>} />
 
             <Route path="*" element={<NotFound />} />
           </Routes>

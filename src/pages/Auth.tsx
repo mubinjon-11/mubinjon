@@ -36,7 +36,8 @@ export default function Auth() {
   });
 
   if (!authLoading && user) {
-    return <Navigate to={role === "oqituvchi" ? "/oqituvchi" : "/dashboard"} replace />;
+    const dest = role === "admin" ? "/admin" : role === "oqituvchi" ? "/oqituvchi" : "/dashboard";
+    return <Navigate to={dest} replace />;
   }
 
   const handleSignIn = async (e: React.FormEvent) => {

@@ -10,8 +10,16 @@ export function AppHeader() {
 
   const isStudent = role === "oquvchi";
   const isTeacher = role === "oqituvchi";
+  const isAdmin = role === "admin";
 
-  const navLinks = isStudent
+  const navLinks = isAdmin
+    ? [
+        { to: "/test/yaratish", label: "Oddiy test yaratish" },
+        { to: "/test/daraja", label: "Darajani aniqlash" },
+        { to: "/oqituvchi/yangi", label: "Test tuzish" },
+        { to: "/admin", label: "Saytni kuzatish" },
+      ]
+    : isStudent
     ? [
         { to: "/test/yaratish", label: "Oddiy test yaratish" },
         { to: "/test/daraja", label: "Darajani aniqlash" },
@@ -26,7 +34,7 @@ export function AppHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-lg">
       <div className="container flex h-16 items-center justify-between gap-4">
-        <Link to={user ? (isStudent ? "/dashboard" : "/oqituvchi") : "/"} className="flex items-center gap-2">
+        <Link to={user ? (isAdmin ? "/admin" : isStudent ? "/dashboard" : "/oqituvchi") : "/"} className="flex items-center gap-2">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl gradient-primary shadow-soft">
             <GraduationCap className="h-5 w-5 text-primary-foreground" />
           </div>
