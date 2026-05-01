@@ -112,6 +112,24 @@ export default function Auth() {
       return;
     }
     setLoading(true);
+
+    // Email haqiqatan mavjudligini server orqali tekshirish (MX DNS yozuvi)
+    try {
+      const { data: vData, error: vErr } = await supabase.functions.invoke("verify-email", {
+        body: { email: parsed.data.email },
+      });
+      if (vErr) throw vErr;
+      if (!vData?.valid) {
+        setLoading(false);
+        toast.error(vData?.reason || "Bu email mavjud emas. Haqiqiy email kiriting.");
+        return;
+      }
+    } catch {
+      setLoading(false);
+      toast.error("Emailni tekshirib bo'lmadi. Qayta urinib ko'ring.");
+      return;
+    }
+
     const { data, error } = await supabase.auth.signUp({
       email: parsed.data.email,
       password: parsed.data.password,
