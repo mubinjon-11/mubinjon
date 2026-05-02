@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { AppHeader } from "@/components/AppHeader";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { calculateLevel } from "@/lib/constants";
+import { calculateLevel, calculateLevelWeighted } from "@/lib/constants";
 import { toast } from "sonner";
 import { CheckCircle2, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 
@@ -73,7 +73,15 @@ export default function TestRunner() {
     questions.forEach((q, i) => { if (answers[i] === q.correct_index) score++; });
     const total = questions.length;
     const percentage = (score / total) * 100;
-    const level = calculateLevel(percentage, subject);
+    const level =
+      mode === "daraja"
+        ? calculateLevelWeighted(
+            questions as any,
+            questions.map((_, i) => answers[i] ?? -1),
+            questions.map((q) => q.correct_index),
+            subject,
+          )
+        : calculateLevel(percentage, subject);
 
     const { error } = await supabase.from("results").insert({
       user_id: user.id,
