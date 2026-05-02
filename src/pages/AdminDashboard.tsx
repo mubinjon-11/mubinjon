@@ -3,7 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { AppHeader } from "@/components/AppHeader";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Users, Mail, Award } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Loader2, Users, Mail, Award, Trash2, Ban, Clock, ShieldCheck, FileText, Eye } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -12,6 +13,33 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
 
 interface UserRow {
   id: string;
@@ -19,59 +47,199 @@ interface UserRow {
   full_name: string | null;
   created_at: string;
   role: string | null;
+  is_blocked: boolean;
+  blocked_until: string | null;
   results: { subject: string; level: string | null; percentage: number; created_at: string }[];
+}
+
+interface TestRow {
+  id: string;
+  title: string;
+  subject: string;
+  topic: string;
+  grade: string | null;
+  question_count: number;
+  created_at: string;
+  teacher_id: string;
+  teacher_name: string | null;
+  teacher_email: string | null;
+}
+
+interface QuestionRow {
+  id: string;
+  question: string;
+  options: any;
+  correct_index: number;
+  position: number;
 }
 
 export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [rows, setRows] = useState<UserRow[]>([]);
+  const [tests, setTests] = useState<TestRow[]>([]);
 
-  useEffect(() => {
-    (async () => {
-      const [{ data: profiles }, { data: roles }, { data: results }] = await Promise.all([
-        supabase.from("profiles").select("id, email, full_name, created_at"),
-        supabase.from("user_roles").select("user_id, role"),
-        supabase
-          .from("results")
-          .select("user_id, subject, level, percentage, created_at, mode")
-          .order("created_at", { ascending: false }),
-      ]);
+  const [confirmDelete, setConfirmDelete] = useState<UserRow | null>(null);
+  const [confirmBlock, setConfirmBlock] = useState<UserRow | null>(null);
+  const [tempBlockUser, setTempBlockUser] = useState<UserRow | null>(null);
+  const [tempHours, setTempHours] = useState("24");
+  const [confirmDeleteTest, setConfirmDeleteTest] = useState<TestRow | null>(null);
+  const [viewTest, setViewTest] = useState<TestRow | null>(null);
+  const [viewQuestions, setViewQuestions] = useState<QuestionRow[]>([]);
+  const [loadingQuestions, setLoadingQuestions] = useState(false);
 
-      const roleMap = new Map<string, string>();
-      (roles ?? []).forEach((r: any) => roleMap.set(r.user_id, r.role));
+  const load = async () => {
+    setLoading(true);
+    const [{ data: profiles }, { data: roles }, { data: results }, { data: testsData }] = await Promise.all([
+      supabase.from("profiles").select("id, email, full_name, created_at, is_blocked, blocked_until"),
+      supabase.from("user_roles").select("user_id, role"),
+      supabase
+        .from("results")
+        .select("user_id, subject, level, percentage, created_at, mode")
+        .order("created_at", { ascending: false }),
+      supabase
+        .from("tests")
+        .select("id, title, subject, topic, grade, question_count, created_at, teacher_id")
+        .order("created_at", { ascending: false }),
+    ]);
 
-      const resultsMap = new Map<string, UserRow["results"]>();
-      (results ?? []).forEach((r: any) => {
-        const arr = resultsMap.get(r.user_id) ?? [];
-        if (!arr.find((x) => x.subject === r.subject)) {
-          arr.push({
-            subject: r.subject,
-            level: r.level,
-            percentage: Number(r.percentage),
-            created_at: r.created_at,
-          });
-        }
-        resultsMap.set(r.user_id, arr);
-      });
+    const roleMap = new Map<string, string>();
+    (roles ?? []).forEach((r: any) => roleMap.set(r.user_id, r.role));
 
-      const merged: UserRow[] = (profiles ?? []).map((p: any) => ({
-        id: p.id,
-        email: p.email,
-        full_name: p.full_name,
-        created_at: p.created_at,
-        role: roleMap.get(p.id) ?? null,
-        results: resultsMap.get(p.id) ?? [],
-      }));
+    const profileMap = new Map<string, any>();
+    (profiles ?? []).forEach((p: any) => profileMap.set(p.id, p));
 
-      merged.sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at));
-      setRows(merged);
-      setLoading(false);
-    })();
-  }, []);
+    const resultsMap = new Map<string, UserRow["results"]>();
+    (results ?? []).forEach((r: any) => {
+      const arr = resultsMap.get(r.user_id) ?? [];
+      if (!arr.find((x) => x.subject === r.subject)) {
+        arr.push({
+          subject: r.subject,
+          level: r.level,
+          percentage: Number(r.percentage),
+          created_at: r.created_at,
+        });
+      }
+      resultsMap.set(r.user_id, arr);
+    });
+
+    const merged: UserRow[] = (profiles ?? []).map((p: any) => ({
+      id: p.id,
+      email: p.email,
+      full_name: p.full_name,
+      created_at: p.created_at,
+      is_blocked: !!p.is_blocked,
+      blocked_until: p.blocked_until,
+      role: roleMap.get(p.id) ?? null,
+      results: resultsMap.get(p.id) ?? [],
+    }));
+
+    merged.sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at));
+    setRows(merged);
+
+    const mergedTests: TestRow[] = (testsData ?? []).map((t: any) => {
+      const tp = profileMap.get(t.teacher_id);
+      return {
+        id: t.id,
+        title: t.title,
+        subject: t.subject,
+        topic: t.topic,
+        grade: t.grade,
+        question_count: t.question_count,
+        created_at: t.created_at,
+        teacher_id: t.teacher_id,
+        teacher_name: tp?.full_name ?? null,
+        teacher_email: tp?.email ?? null,
+      };
+    });
+    setTests(mergedTests);
+    setLoading(false);
+  };
+
+  useEffect(() => { load(); }, []);
 
   const totalUsers = rows.length;
   const totalStudents = rows.filter((r) => r.role === "oquvchi").length;
   const totalTeachers = rows.filter((r) => r.role === "oqituvchi").length;
+
+  const blockStatus = (u: UserRow) => {
+    if (u.is_blocked) return { label: "Bloklangan", variant: "destructive" as const };
+    if (u.blocked_until && new Date(u.blocked_until).getTime() > Date.now())
+      return {
+        label: `Vaqtinchalik (${new Date(u.blocked_until).toLocaleString("uz-UZ")})`,
+        variant: "secondary" as const,
+      };
+    return null;
+  };
+
+  const handlePermanentBlock = async (u: UserRow) => {
+    const newVal = !u.is_blocked;
+    const { error } = await supabase
+      .from("profiles")
+      .update({ is_blocked: newVal, blocked_until: null })
+      .eq("id", u.id);
+    if (error) return toast.error(error.message);
+    toast.success(newVal ? "Foydalanuvchi bloklandi" : "Blokdan chiqarildi");
+    setConfirmBlock(null);
+    load();
+  };
+
+  const handleTempBlock = async () => {
+    if (!tempBlockUser) return;
+    const hours = parseInt(tempHours);
+    if (isNaN(hours) || hours <= 0) return toast.error("To'g'ri soatlar sonini kiriting");
+    const until = new Date(Date.now() + hours * 3600 * 1000).toISOString();
+    const { error } = await supabase
+      .from("profiles")
+      .update({ blocked_until: until, is_blocked: false })
+      .eq("id", tempBlockUser.id);
+    if (error) return toast.error(error.message);
+    toast.success(`${hours} soatga vaqtinchalik bloklandi`);
+    setTempBlockUser(null);
+    setTempHours("24");
+    load();
+  };
+
+  const handleUnblock = async (u: UserRow) => {
+    const { error } = await supabase
+      .from("profiles")
+      .update({ is_blocked: false, blocked_until: null })
+      .eq("id", u.id);
+    if (error) return toast.error(error.message);
+    toast.success("Blok olib tashlandi");
+    load();
+  };
+
+  const handleDelete = async (u: UserRow) => {
+    // Cascade-style cleanup (auth.users qolishi mumkin, lekin barcha public ma'lumotlar o'chiriladi)
+    await supabase.from("results").delete().eq("user_id", u.id);
+    await supabase.from("user_roles").delete().eq("user_id", u.id);
+    const { error } = await supabase.from("profiles").delete().eq("id", u.id);
+    if (error) return toast.error(error.message);
+    toast.success("Foydalanuvchi saytdan o'chirildi");
+    setConfirmDelete(null);
+    load();
+  };
+
+  const handleDeleteTest = async (t: TestRow) => {
+    await supabase.from("questions").delete().eq("test_id", t.id);
+    const { error } = await supabase.from("tests").delete().eq("id", t.id);
+    if (error) return toast.error(error.message);
+    toast.success("Test o'chirildi");
+    setConfirmDeleteTest(null);
+    load();
+  };
+
+  const openViewTest = async (t: TestRow) => {
+    setViewTest(t);
+    setLoadingQuestions(true);
+    const { data } = await supabase
+      .from("questions")
+      .select("id, question, options, correct_index, position")
+      .eq("test_id", t.id)
+      .order("position", { ascending: true });
+    setViewQuestions((data as any) ?? []);
+    setLoadingQuestions(false);
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -80,7 +248,7 @@ export default function AdminDashboard() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold tracking-tight">Saytni kuzatish</h1>
           <p className="text-muted-foreground mt-1">
-            Saytga ro'yxatdan o'tgan barcha foydalanuvchilar va ularning fanlar bo'yicha darajalari.
+            Foydalanuvchilarni boshqaring va o'qituvchilar testlarini ko'rib chiqing.
           </p>
         </div>
 
@@ -114,67 +282,333 @@ export default function AdminDashboard() {
           </Card>
         </div>
 
-        <Card className="overflow-hidden">
-          {loading ? (
-            <div className="p-12 flex justify-center">
+        <Tabs defaultValue="users" className="space-y-4">
+          <TabsList>
+            <TabsTrigger value="users">Foydalanuvchilar</TabsTrigger>
+            <TabsTrigger value="tests">O'qituvchi testlari ({tests.length})</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="users">
+            <Card className="overflow-hidden">
+              {loading ? (
+                <div className="p-12 flex justify-center">
+                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                </div>
+              ) : rows.length === 0 ? (
+                <div className="p-12 text-center text-muted-foreground">
+                  Hozircha foydalanuvchilar yo'q.
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Ism</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Rol</TableHead>
+                      <TableHead>Holat</TableHead>
+                      <TableHead>Fanlar</TableHead>
+                      <TableHead className="text-right">Amallar</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {rows.map((u) => {
+                      const status = blockStatus(u);
+                      return (
+                        <TableRow key={u.id}>
+                          <TableCell className="font-medium">{u.full_name || "—"}</TableCell>
+                          <TableCell className="text-muted-foreground text-sm">{u.email || "—"}</TableCell>
+                          <TableCell>
+                            {u.role ? (
+                              <Badge variant={u.role === "admin" ? "default" : "secondary"}>
+                                {u.role === "admin"
+                                  ? "Admin"
+                                  : u.role === "oqituvchi"
+                                  ? "O'qituvchi"
+                                  : "O'quvchi"}
+                              </Badge>
+                            ) : (
+                              <span className="text-muted-foreground text-sm">—</span>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {status ? (
+                              <Badge variant={status.variant} className="text-xs">{status.label}</Badge>
+                            ) : (
+                              <Badge variant="outline" className="text-xs">Faol</Badge>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {u.results.length === 0 ? (
+                              <span className="text-muted-foreground text-xs">—</span>
+                            ) : (
+                              <div className="flex flex-wrap gap-1.5 max-w-[260px]">
+                                {u.results.map((r, i) => (
+                                  <Badge key={i} variant="outline" className="font-normal text-xs">
+                                    {r.subject}: {r.level ?? `${Math.round(r.percentage)}%`}
+                                  </Badge>
+                                ))}
+                              </div>
+                            )}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            {u.role === "admin" ? (
+                              <span className="text-xs text-muted-foreground">Himoyalangan</span>
+                            ) : (
+                              <div className="flex justify-end gap-1.5 flex-wrap">
+                                {status ? (
+                                  <Button size="sm" variant="outline" onClick={() => handleUnblock(u)}>
+                                    <ShieldCheck className="h-3.5 w-3.5" />
+                                    Blokdan chiqar
+                                  </Button>
+                                ) : (
+                                  <>
+                                    <Button size="sm" variant="outline" onClick={() => setTempBlockUser(u)}>
+                                      <Clock className="h-3.5 w-3.5" />
+                                      Vaqtinchalik
+                                    </Button>
+                                    <Button size="sm" variant="secondary" onClick={() => setConfirmBlock(u)}>
+                                      <Ban className="h-3.5 w-3.5" />
+                                      Bloklash
+                                    </Button>
+                                  </>
+                                )}
+                                <Button size="sm" variant="destructive" onClick={() => setConfirmDelete(u)}>
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                  O'chir
+                                </Button>
+                              </div>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              )}
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="tests">
+            <Card className="overflow-hidden">
+              {loading ? (
+                <div className="p-12 flex justify-center">
+                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                </div>
+              ) : tests.length === 0 ? (
+                <div className="p-12 text-center text-muted-foreground">
+                  O'qituvchilar tomonidan yaratilgan testlar yo'q.
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Test nomi</TableHead>
+                      <TableHead>Fan / Mavzu</TableHead>
+                      <TableHead>Sinf</TableHead>
+                      <TableHead>Savollar</TableHead>
+                      <TableHead>O'qituvchi</TableHead>
+                      <TableHead>Sana</TableHead>
+                      <TableHead className="text-right">Amallar</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {tests.map((t) => (
+                      <TableRow key={t.id}>
+                        <TableCell className="font-medium">{t.title}</TableCell>
+                        <TableCell className="text-sm">
+                          <div>{t.subject}</div>
+                          <div className="text-muted-foreground text-xs">{t.topic}</div>
+                        </TableCell>
+                        <TableCell className="text-sm">{t.grade ?? "—"}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline">{t.question_count}</Badge>
+                        </TableCell>
+                        <TableCell className="text-sm">
+                          <div>{t.teacher_name ?? "—"}</div>
+                          <div className="text-muted-foreground text-xs">{t.teacher_email ?? ""}</div>
+                        </TableCell>
+                        <TableCell className="text-muted-foreground text-xs">
+                          {new Date(t.created_at).toLocaleDateString("uz-UZ")}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-1.5">
+                            <Button size="sm" variant="outline" onClick={() => openViewTest(t)}>
+                              <Eye className="h-3.5 w-3.5" />
+                              Ko'rish
+                            </Button>
+                            <Button size="sm" variant="destructive" onClick={() => setConfirmDeleteTest(t)}>
+                              <Trash2 className="h-3.5 w-3.5" />
+                              O'chir
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </main>
+
+      {/* Delete user */}
+      <AlertDialog open={!!confirmDelete} onOpenChange={(o) => !o && setConfirmDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Foydalanuvchini o'chirish</AlertDialogTitle>
+            <AlertDialogDescription>
+              <strong>{confirmDelete?.full_name || confirmDelete?.email}</strong> saytdan butunlay o'chiriladi.
+              Uning barcha natijalari va ma'lumotlari yo'qoladi. Bu amalni qaytarib bo'lmaydi.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => confirmDelete && handleDelete(confirmDelete)}
+            >
+              Ha, o'chir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Permanent block */}
+      <AlertDialog open={!!confirmBlock} onOpenChange={(o) => !o && setConfirmBlock(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Foydalanuvchini bloklash</AlertDialogTitle>
+            <AlertDialogDescription>
+              <strong>{confirmBlock?.full_name || confirmBlock?.email}</strong> saytga kira olmaydi.
+              Keyinchalik blokni olib tashlashingiz mumkin.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Bekor</AlertDialogCancel>
+            <AlertDialogAction onClick={() => confirmBlock && handlePermanentBlock(confirmBlock)}>
+              Blokla
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Temp block */}
+      <Dialog open={!!tempBlockUser} onOpenChange={(o) => !o && setTempBlockUser(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Vaqtinchalik bloklash</DialogTitle>
+            <DialogDescription>
+              {tempBlockUser?.full_name || tempBlockUser?.email} qancha vaqtga bloklansin?
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label>Soatlar soni</Label>
+            <Input
+              type="number"
+              min="1"
+              value={tempHours}
+              onChange={(e) => setTempHours(e.target.value)}
+            />
+            <div className="flex gap-2 flex-wrap pt-1">
+              {[1, 24, 72, 168].map((h) => (
+                <Button key={h} type="button" size="sm" variant="outline" onClick={() => setTempHours(String(h))}>
+                  {h === 1 ? "1 soat" : h === 24 ? "1 kun" : h === 72 ? "3 kun" : "1 hafta"}
+                </Button>
+              ))}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setTempBlockUser(null)}>Bekor</Button>
+            <Button onClick={handleTempBlock}>Blokla</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete test */}
+      <AlertDialog open={!!confirmDeleteTest} onOpenChange={(o) => !o && setConfirmDeleteTest(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Testni o'chirish</AlertDialogTitle>
+            <AlertDialogDescription>
+              <strong>{confirmDeleteTest?.title}</strong> testi va uning barcha savollari o'chiriladi.
+              Bu amalni qaytarib bo'lmaydi.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Bekor</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => confirmDeleteTest && handleDeleteTest(confirmDeleteTest)}
+            >
+              Ha, o'chir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* View test questions */}
+      <Dialog open={!!viewTest} onOpenChange={(o) => !o && setViewTest(null)}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              {viewTest?.title}
+            </DialogTitle>
+            <DialogDescription>
+              {viewTest?.subject} • {viewTest?.topic} {viewTest?.grade ? `• ${viewTest.grade}-sinf` : ""}
+            </DialogDescription>
+          </DialogHeader>
+          {loadingQuestions ? (
+            <div className="py-8 flex justify-center">
               <Loader2 className="h-6 w-6 animate-spin text-primary" />
             </div>
-          ) : rows.length === 0 ? (
-            <div className="p-12 text-center text-muted-foreground">
-              Hozircha foydalanuvchilar yo'q.
-            </div>
+          ) : viewQuestions.length === 0 ? (
+            <p className="text-muted-foreground text-sm py-4">Savollar yo'q.</p>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Ism</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Rol</TableHead>
-                  <TableHead>Fanlar bo'yicha darajalari</TableHead>
-                  <TableHead>Ro'yxatdan o'tdi</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {rows.map((u) => (
-                  <TableRow key={u.id}>
-                    <TableCell className="font-medium">{u.full_name || "—"}</TableCell>
-                    <TableCell className="text-muted-foreground">{u.email || "—"}</TableCell>
-                    <TableCell>
-                      {u.role ? (
-                        <Badge variant={u.role === "admin" ? "default" : "secondary"}>
-                          {u.role === "admin"
-                            ? "Admin"
-                            : u.role === "oqituvchi"
-                            ? "O'qituvchi"
-                            : "O'quvchi"}
-                        </Badge>
-                      ) : (
-                        <span className="text-muted-foreground text-sm">—</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {u.results.length === 0 ? (
-                        <span className="text-muted-foreground text-sm">Hali test topshirmagan</span>
-                      ) : (
-                        <div className="flex flex-wrap gap-1.5">
-                          {u.results.map((r, i) => (
-                            <Badge key={i} variant="outline" className="font-normal">
-                              {r.subject}: {r.level ?? `${Math.round(r.percentage)}%`}
-                            </Badge>
-                          ))}
+            <ol className="space-y-4 list-decimal list-inside">
+              {viewQuestions.map((q) => {
+                const opts = Array.isArray(q.options) ? q.options : [];
+                return (
+                  <li key={q.id} className="border rounded-lg p-3 space-y-2">
+                    <div className="font-medium">{q.question}</div>
+                    <div className="space-y-1">
+                      {opts.map((opt: string, i: number) => (
+                        <div
+                          key={i}
+                          className={`text-sm px-2 py-1 rounded ${
+                            i === q.correct_index
+                              ? "bg-primary/10 text-primary font-medium"
+                              : "text-muted-foreground"
+                          }`}
+                        >
+                          {String.fromCharCode(65 + i)}. {opt}
+                          {i === q.correct_index && " ✓"}
                         </div>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground text-sm">
-                      {new Date(u.created_at).toLocaleDateString("uz-UZ")}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                      ))}
+                    </div>
+                  </li>
+                );
+              })}
+            </ol>
           )}
-        </Card>
-      </main>
+          <DialogFooter>
+            {viewTest && (
+              <Button
+                variant="destructive"
+                onClick={() => {
+                  setConfirmDeleteTest(viewTest);
+                  setViewTest(null);
+                }}
+              >
+                <Trash2 className="h-4 w-4" />
+                Testni o'chir
+              </Button>
+            )}
+            <Button variant="outline" onClick={() => setViewTest(null)}>Yopish</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
