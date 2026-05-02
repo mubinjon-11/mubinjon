@@ -64,11 +64,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     });
 
-    supabase.auth.getSession().then(({ data: { session: s } }) => {
+    supabase.auth.getSession().then(async ({ data: { session: s } }) => {
       setSession(s);
       setUser(s?.user ?? null);
-      if (s?.user) fetchRole(s.user.id).finally(() => setLoading(false));
-      else setLoading(false);
+      if (s?.user) {
+        const blocked = await checkBlockedAndSignOut(s.user.id);
+        if (!blocked) await fetchRole(s.user.id);
+      }
+      setLoading(false);
     });
 
     return () => sub.subscription.unsubscribe();
