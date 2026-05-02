@@ -35,6 +35,59 @@ export function calculateLevel(percentage: number, subject: string): string {
   return "Boshlang'ich";
 }
 
+/**
+ * Weighted level calculation for AI-generated level tests.
+ * Uses each question's difficulty (CEFR for languages, 1-6 for other subjects).
+ * Student's level = highest tier where they got ≥60% correct,
+ * provided all easier tiers were ≥50%.
+ */
+export function calculateLevelWeighted(
+  questions: Array<{ difficulty?: string | number }>,
+  answers: number[],
+  correctIndices: number[],
+  subject: string,
+): string {
+  const isLanguage = LANGUAGE_SUBJECTS.includes(subject);
+  const tiers = isLanguage
+    ? ["A1", "A2", "B1", "B2", "C1", "C2"]
+    : ["1", "2", "3", "4", "5", "6"];
+  const labels = isLanguage
+    ? ["A1", "A2", "B1", "B2", "C1", "C2"]
+    : ["Boshlang'ich", "Boshlang'ich+", "O'rta", "O'rta+", "Yuqori", "Olimpiada"];
+
+  const stats: Record<string, { correct: number; total: number }> = {};
+  tiers.forEach((t) => (stats[t] = { correct: 0, total: 0 }));
+
+  let hasDifficulty = false;
+  questions.forEach((q, i) => {
+    if (q.difficulty === undefined || q.difficulty === null) return;
+    hasDifficulty = true;
+    const key = String(q.difficulty);
+    if (!stats[key]) return;
+    stats[key].total += 1;
+    if (answers[i] === correctIndices[i]) stats[key].correct += 1;
+  });
+
+  if (!hasDifficulty) {
+    const correct = answers.reduce((s, a, i) => s + (a === correctIndices[i] ? 1 : 0), 0);
+    const pct = (correct / questions.length) * 100;
+    return calculateLevel(pct, subject);
+  }
+
+  let achievedIdx = -1;
+  let allLowerOk = true;
+  for (let i = 0; i < tiers.length; i++) {
+    const s = stats[tiers[i]];
+    if (s.total === 0) continue;
+    const ratio = s.correct / s.total;
+    if (allLowerOk && ratio >= 0.6) achievedIdx = i;
+    if (ratio < 0.5) allLowerOk = false;
+  }
+
+  if (achievedIdx === -1) return isLanguage ? "A1" : "Boshlang'ich";
+  return labels[achievedIdx];
+}
+
 export function levelColor(level: string): string {
   if (["C2", "C1", "Yuqori daraja"].includes(level)) return "bg-success text-success-foreground";
   if (["B2", "B1", "O'rta daraja"].includes(level)) return "bg-primary text-primary-foreground";
