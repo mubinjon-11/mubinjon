@@ -16,22 +16,28 @@ export type Database = {
     Tables: {
       profiles: {
         Row: {
+          blocked_until: string | null
           created_at: string
           email: string | null
           full_name: string | null
           id: string
+          is_blocked: boolean
         }
         Insert: {
+          blocked_until?: string | null
           created_at?: string
           email?: string | null
           full_name?: string | null
           id: string
+          is_blocked?: boolean
         }
         Update: {
+          blocked_until?: string | null
           created_at?: string
           email?: string | null
           full_name?: string | null
           id?: string
+          is_blocked?: boolean
         }
         Relationships: []
       }
