@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { AppHeader } from "@/components/AppHeader";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { calculateLevel } from "@/lib/constants";
+import { calculateLevel, calculateLevelWeighted } from "@/lib/constants";
 import { toast } from "sonner";
 import { CheckCircle2, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 
