@@ -26,12 +26,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setRole((data?.role as Role) ?? null);
   };
 
+  const checkBlockedAndSignOut = async (uid: string): Promise<boolean> => {
+    const { data } = await supabase
+      .from("profiles")
+      .select("is_blocked, blocked_until")
+      .eq("id", uid)
+      .maybeSingle();
+    if (!data) return false;
+    const now = Date.now();
+    const tempActive = data.blocked_until && new Date(data.blocked_until).getTime() > now;
+    if (data.is_blocked || tempActive) {
+      const msg = data.is_blocked
+        ? "Sizning akkauntingiz bloklangan."
+        : `Akkauntingiz ${new Date(data.blocked_until!).toLocaleString("uz-UZ")} gacha vaqtinchalik bloklangan.`;
+      await supabase.auth.signOut();
+      setRole(null);
+      setUser(null);
+      setSession(null);
+      const { toast } = await import("sonner");
+      toast.error(msg);
+      return true;
+    }
+    return false;
+  };
+
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
       setSession(s);
       setUser(s?.user ?? null);
       if (s?.user) {
-        setTimeout(() => fetchRole(s.user.id), 0);
+        setTimeout(async () => {
+          const blocked = await checkBlockedAndSignOut(s.user.id);
+          if (!blocked) fetchRole(s.user.id);
+        }, 0);
       } else {
         setRole(null);
       }
