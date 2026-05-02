@@ -89,8 +89,8 @@ export function calculateLevelWeighted(
 }
 
 export function levelColor(level: string): string {
-  if (["C2", "C1", "Yuqori daraja"].includes(level)) return "bg-success text-success-foreground";
-  if (["B2", "B1", "O'rta daraja"].includes(level)) return "bg-primary text-primary-foreground";
+  if (["C2", "C1", "Yuqori daraja", "Yuqori", "Olimpiada"].includes(level)) return "bg-success text-success-foreground";
+  if (["B2", "B1", "O'rta daraja", "O'rta", "O'rta+"].includes(level)) return "bg-primary text-primary-foreground";
   if (["A2", "Boshlang'ich+"].includes(level)) return "bg-warning text-warning-foreground";
   if (["A1", "Boshlang'ich"].includes(level)) return "bg-muted text-muted-foreground";
   return "bg-muted text-muted-foreground";
