@@ -546,6 +546,47 @@ export default function AdminDashboard() {
         </DialogContent>
       </Dialog>
 
+      {/* Teacher tests for selected user */}
+      <Dialog open={!!teacherTestsUser} onOpenChange={(o) => !o && setTeacherTestsUser(null)}>
+        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>O'qituvchi testlari</DialogTitle>
+            <DialogDescription>
+              {teacherTestsUser?.full_name || teacherTestsUser?.email} yaratgan testlar ro'yxati
+            </DialogDescription>
+          </DialogHeader>
+          {selectedTeacherTests.length === 0 ? (
+            <div className="py-8 text-center text-sm text-muted-foreground">Bu o'qituvchi hali test yaratmagan.</div>
+          ) : (
+            <div className="space-y-3">
+              {selectedTeacherTests.map((t) => (
+                <div key={t.id} className="flex items-center justify-between gap-3 rounded-md border p-3">
+                  <div className="min-w-0">
+                    <div className="font-medium truncate">{t.title}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {t.subject} • {t.topic} {t.grade ? `• ${t.grade}-sinf` : ""} • {t.question_count} savol
+                    </div>
+                  </div>
+                  <div className="flex shrink-0 gap-2">
+                    <Button size="sm" variant="outline" onClick={() => openViewTest(t)}>
+                      <Eye className="h-3.5 w-3.5" />
+                      Ko'rish
+                    </Button>
+                    <Button size="sm" variant="destructive" onClick={() => setConfirmDeleteTest(t)}>
+                      <Trash2 className="h-3.5 w-3.5" />
+                      O'chir
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setTeacherTestsUser(null)}>Yopish</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Delete test */}
       <AlertDialog open={!!confirmDeleteTest} onOpenChange={(o) => !o && setConfirmDeleteTest(null)}>
         <AlertDialogContent>
