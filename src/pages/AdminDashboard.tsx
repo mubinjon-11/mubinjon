@@ -4,7 +4,7 @@ import { AppHeader } from "@/components/AppHeader";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Loader2, Users, Mail, Award, Trash2, Ban, Clock, ShieldCheck, FileText, Eye } from "lucide-react";
+import { Loader2, Users, Mail, Award, Trash2, Ban, Clock, ShieldCheck, FileText, Eye, MoreVertical } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -37,6 +37,13 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
@@ -84,6 +91,7 @@ export default function AdminDashboard() {
   const [tempHours, setTempHours] = useState("24");
   const [confirmDeleteTest, setConfirmDeleteTest] = useState<TestRow | null>(null);
   const [viewTest, setViewTest] = useState<TestRow | null>(null);
+  const [teacherTestsUser, setTeacherTestsUser] = useState<UserRow | null>(null);
   const [viewQuestions, setViewQuestions] = useState<QuestionRow[]>([]);
   const [loadingQuestions, setLoadingQuestions] = useState(false);
 
@@ -210,13 +218,13 @@ export default function AdminDashboard() {
   };
 
   const handleDelete = async (u: UserRow) => {
-    // Cascade-style cleanup (auth.users qolishi mumkin, lekin barcha public ma'lumotlar o'chiriladi)
-    await supabase.from("results").delete().eq("user_id", u.id);
-    await supabase.from("user_roles").delete().eq("user_id", u.id);
-    const { error } = await supabase.from("profiles").delete().eq("id", u.id);
+    const { error } = await supabase.functions.invoke("admin-delete-user", {
+      body: { userId: u.id },
+    });
     if (error) return toast.error(error.message);
     toast.success("Foydalanuvchi saytdan o'chirildi");
     setConfirmDelete(null);
+    setTeacherTestsUser(null);
     load();
   };
 
