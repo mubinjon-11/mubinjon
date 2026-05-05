@@ -568,11 +568,11 @@ export default function AdminDashboard() {
                     </div>
                   </div>
                   <div className="flex shrink-0 gap-2">
-                    <Button size="sm" variant="outline" onClick={() => openViewTest(t)}>
+                    <Button size="sm" variant="outline" onClick={() => { setTeacherTestsUser(null); openViewTest(t); }}>
                       <Eye className="h-3.5 w-3.5" />
                       Ko'rish
                     </Button>
-                    <Button size="sm" variant="destructive" onClick={() => setConfirmDeleteTest(t)}>
+                    <Button size="sm" variant="destructive" onClick={() => { setTeacherTestsUser(null); setConfirmDeleteTest(t); }}>
                       <Trash2 className="h-3.5 w-3.5" />
                       O'chir
                     </Button>
