@@ -183,13 +183,12 @@ export default function AdminDashboard() {
   };
 
   const handlePermanentBlock = async (u: UserRow) => {
-    const newVal = !u.is_blocked;
     const { error } = await supabase
       .from("profiles")
-      .update({ is_blocked: newVal, blocked_until: null })
+      .update({ is_blocked: true, blocked_until: null })
       .eq("id", u.id);
     if (error) return toast.error(error.message);
-    toast.success(newVal ? "Foydalanuvchi bloklandi" : "Blokdan chiqarildi");
+    toast.success("Foydalanuvchi bloklandi");
     setConfirmBlock(null);
     load();
   };
