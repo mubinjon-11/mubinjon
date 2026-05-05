@@ -168,6 +168,9 @@ export default function AdminDashboard() {
   const totalUsers = rows.length;
   const totalStudents = rows.filter((r) => r.role === "oquvchi").length;
   const totalTeachers = rows.filter((r) => r.role === "oqituvchi").length;
+  const selectedTeacherTests = teacherTestsUser
+    ? tests.filter((t) => t.teacher_id === teacherTestsUser.id)
+    : [];
 
   const blockStatus = (u: UserRow) => {
     if (u.is_blocked) return { label: "Bloklangan", variant: "destructive" as const };
@@ -359,33 +362,44 @@ export default function AdminDashboard() {
                             )}
                           </TableCell>
                           <TableCell className="text-right">
-                            {u.role === "admin" ? (
-                              <span className="text-xs text-muted-foreground">Himoyalangan</span>
-                            ) : (
-                              <div className="flex justify-end gap-1.5 flex-wrap">
-                                {status ? (
-                                  <Button size="sm" variant="outline" onClick={() => handleUnblock(u)}>
-                                    <ShieldCheck className="h-3.5 w-3.5" />
-                                    Blokdan chiqar
-                                  </Button>
-                                ) : (
-                                  <>
-                                    <Button size="sm" variant="outline" onClick={() => setTempBlockUser(u)}>
-                                      <Clock className="h-3.5 w-3.5" />
-                                      Vaqtinchalik
-                                    </Button>
-                                    <Button size="sm" variant="secondary" onClick={() => setConfirmBlock(u)}>
-                                      <Ban className="h-3.5 w-3.5" />
-                                      Bloklash
-                                    </Button>
-                                  </>
-                                )}
-                                <Button size="sm" variant="destructive" onClick={() => setConfirmDelete(u)}>
-                                  <Trash2 className="h-3.5 w-3.5" />
-                                  O'chir
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" aria-label="Amallar menyusi">
+                                  <MoreVertical className="h-4 w-4" />
                                 </Button>
-                              </div>
-                            )}
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end" className="w-60">
+                                {status && (
+                                  <DropdownMenuItem onSelect={() => handleUnblock(u)}>
+                                    <ShieldCheck className="mr-2 h-4 w-4" />
+                                    Blokdan chiqarish
+                                  </DropdownMenuItem>
+                                )}
+                                <DropdownMenuItem disabled={u.role === "admin"} onSelect={() => setConfirmBlock(u)}>
+                                  <Ban className="mr-2 h-4 w-4" />
+                                  Foydalanuvchini bloklash
+                                </DropdownMenuItem>
+                                <DropdownMenuItem disabled={u.role === "admin"} onSelect={() => setTempBlockUser(u)}>
+                                  <Clock className="mr-2 h-4 w-4" />
+                                  Vaqtinchalik bloklash
+                                </DropdownMenuItem>
+                                {u.role === "oqituvchi" && (
+                                  <DropdownMenuItem onSelect={() => setTeacherTestsUser(u)}>
+                                    <FileText className="mr-2 h-4 w-4" />
+                                    Yaratgan testlarini ko'rish
+                                  </DropdownMenuItem>
+                                )}
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                  disabled={u.role === "admin"}
+                                  className="text-destructive focus:text-destructive"
+                                  onSelect={() => setConfirmDelete(u)}
+                                >
+                                  <Trash2 className="mr-2 h-4 w-4" />
+                                  Saytdan chiqarib tashlash
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
                           </TableCell>
                         </TableRow>
                       );
