@@ -67,7 +67,10 @@ Deno.serve(async (req) => {
 
     const { data: teacherTests } = await serviceClient.from("tests").select("id").eq("teacher_id", userId);
     const testIds = (teacherTests ?? []).map((t) => t.id);
-    if (testIds.length > 0) await serviceClient.from("questions").delete().in("test_id", testIds);
+    if (testIds.length > 0) {
+      await serviceClient.from("questions").delete().in("test_id", testIds);
+      await serviceClient.from("results").delete().in("test_id", testIds);
+    }
 
     await serviceClient.from("results").delete().eq("user_id", userId);
     await serviceClient.from("tests").delete().eq("teacher_id", userId);
