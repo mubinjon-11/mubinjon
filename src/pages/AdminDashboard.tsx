@@ -4,7 +4,7 @@ import { AppHeader } from "@/components/AppHeader";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Loader2, Users, Mail, Award, Trash2, Ban, Clock, ShieldCheck, FileText, Eye } from "lucide-react";
+import { Loader2, Users, Mail, Award, Trash2, Ban, Clock, ShieldCheck, FileText, Eye, MoreVertical } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -37,6 +37,13 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
@@ -84,6 +91,7 @@ export default function AdminDashboard() {
   const [tempHours, setTempHours] = useState("24");
   const [confirmDeleteTest, setConfirmDeleteTest] = useState<TestRow | null>(null);
   const [viewTest, setViewTest] = useState<TestRow | null>(null);
+  const [teacherTestsUser, setTeacherTestsUser] = useState<UserRow | null>(null);
   const [viewQuestions, setViewQuestions] = useState<QuestionRow[]>([]);
   const [loadingQuestions, setLoadingQuestions] = useState(false);
 
@@ -160,6 +168,9 @@ export default function AdminDashboard() {
   const totalUsers = rows.length;
   const totalStudents = rows.filter((r) => r.role === "oquvchi").length;
   const totalTeachers = rows.filter((r) => r.role === "oqituvchi").length;
+  const selectedTeacherTests = teacherTestsUser
+    ? tests.filter((t) => t.teacher_id === teacherTestsUser.id)
+    : [];
 
   const blockStatus = (u: UserRow) => {
     if (u.is_blocked) return { label: "Bloklangan", variant: "destructive" as const };
@@ -172,13 +183,12 @@ export default function AdminDashboard() {
   };
 
   const handlePermanentBlock = async (u: UserRow) => {
-    const newVal = !u.is_blocked;
     const { error } = await supabase
       .from("profiles")
-      .update({ is_blocked: newVal, blocked_until: null })
+      .update({ is_blocked: true, blocked_until: null })
       .eq("id", u.id);
     if (error) return toast.error(error.message);
-    toast.success(newVal ? "Foydalanuvchi bloklandi" : "Blokdan chiqarildi");
+    toast.success("Foydalanuvchi bloklandi");
     setConfirmBlock(null);
     load();
   };
@@ -210,13 +220,13 @@ export default function AdminDashboard() {
   };
 
   const handleDelete = async (u: UserRow) => {
-    // Cascade-style cleanup (auth.users qolishi mumkin, lekin barcha public ma'lumotlar o'chiriladi)
-    await supabase.from("results").delete().eq("user_id", u.id);
-    await supabase.from("user_roles").delete().eq("user_id", u.id);
-    const { error } = await supabase.from("profiles").delete().eq("id", u.id);
+    const { error } = await supabase.functions.invoke("admin-delete-user", {
+      body: { userId: u.id },
+    });
     if (error) return toast.error(error.message);
     toast.success("Foydalanuvchi saytdan o'chirildi");
     setConfirmDelete(null);
+    setTeacherTestsUser(null);
     load();
   };
 
@@ -351,33 +361,44 @@ export default function AdminDashboard() {
                             )}
                           </TableCell>
                           <TableCell className="text-right">
-                            {u.role === "admin" ? (
-                              <span className="text-xs text-muted-foreground">Himoyalangan</span>
-                            ) : (
-                              <div className="flex justify-end gap-1.5 flex-wrap">
-                                {status ? (
-                                  <Button size="sm" variant="outline" onClick={() => handleUnblock(u)}>
-                                    <ShieldCheck className="h-3.5 w-3.5" />
-                                    Blokdan chiqar
-                                  </Button>
-                                ) : (
-                                  <>
-                                    <Button size="sm" variant="outline" onClick={() => setTempBlockUser(u)}>
-                                      <Clock className="h-3.5 w-3.5" />
-                                      Vaqtinchalik
-                                    </Button>
-                                    <Button size="sm" variant="secondary" onClick={() => setConfirmBlock(u)}>
-                                      <Ban className="h-3.5 w-3.5" />
-                                      Bloklash
-                                    </Button>
-                                  </>
-                                )}
-                                <Button size="sm" variant="destructive" onClick={() => setConfirmDelete(u)}>
-                                  <Trash2 className="h-3.5 w-3.5" />
-                                  O'chir
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" aria-label="Amallar menyusi">
+                                  <MoreVertical className="h-4 w-4" />
                                 </Button>
-                              </div>
-                            )}
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end" className="w-60">
+                                {status && (
+                                  <DropdownMenuItem onSelect={() => handleUnblock(u)}>
+                                    <ShieldCheck className="mr-2 h-4 w-4" />
+                                    Blokdan chiqarish
+                                  </DropdownMenuItem>
+                                )}
+                                <DropdownMenuItem disabled={u.role === "admin"} onSelect={() => setConfirmBlock(u)}>
+                                  <Ban className="mr-2 h-4 w-4" />
+                                  Foydalanuvchini bloklash
+                                </DropdownMenuItem>
+                                <DropdownMenuItem disabled={u.role === "admin"} onSelect={() => setTempBlockUser(u)}>
+                                  <Clock className="mr-2 h-4 w-4" />
+                                  Vaqtinchalik bloklash
+                                </DropdownMenuItem>
+                                {u.role === "oqituvchi" && (
+                                  <DropdownMenuItem onSelect={() => setTeacherTestsUser(u)}>
+                                    <FileText className="mr-2 h-4 w-4" />
+                                    Yaratgan testlarini ko'rish
+                                  </DropdownMenuItem>
+                                )}
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                  disabled={u.role === "admin"}
+                                  className="text-destructive focus:text-destructive"
+                                  onSelect={() => setConfirmDelete(u)}
+                                >
+                                  <Trash2 className="mr-2 h-4 w-4" />
+                                  Saytdan chiqarib tashlash
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
                           </TableCell>
                         </TableRow>
                       );
@@ -521,6 +542,47 @@ export default function AdminDashboard() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setTempBlockUser(null)}>Bekor</Button>
             <Button onClick={handleTempBlock}>Blokla</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Teacher tests for selected user */}
+      <Dialog open={!!teacherTestsUser} onOpenChange={(o) => !o && setTeacherTestsUser(null)}>
+        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>O'qituvchi testlari</DialogTitle>
+            <DialogDescription>
+              {teacherTestsUser?.full_name || teacherTestsUser?.email} yaratgan testlar ro'yxati
+            </DialogDescription>
+          </DialogHeader>
+          {selectedTeacherTests.length === 0 ? (
+            <div className="py-8 text-center text-sm text-muted-foreground">Bu o'qituvchi hali test yaratmagan.</div>
+          ) : (
+            <div className="space-y-3">
+              {selectedTeacherTests.map((t) => (
+                <div key={t.id} className="flex items-center justify-between gap-3 rounded-md border p-3">
+                  <div className="min-w-0">
+                    <div className="font-medium truncate">{t.title}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {t.subject} • {t.topic} {t.grade ? `• ${t.grade}-sinf` : ""} • {t.question_count} savol
+                    </div>
+                  </div>
+                  <div className="flex shrink-0 gap-2">
+                    <Button size="sm" variant="outline" onClick={() => { setTeacherTestsUser(null); openViewTest(t); }}>
+                      <Eye className="h-3.5 w-3.5" />
+                      Ko'rish
+                    </Button>
+                    <Button size="sm" variant="destructive" onClick={() => { setTeacherTestsUser(null); setConfirmDeleteTest(t); }}>
+                      <Trash2 className="h-3.5 w-3.5" />
+                      O'chir
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setTeacherTestsUser(null)}>Yopish</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
