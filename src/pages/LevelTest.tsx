@@ -1,18 +1,47 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { AppHeader } from "@/components/AppHeader";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { SUBJECTS } from "@/lib/constants";
+import { SUBJECTS, levelColor } from "@/lib/constants";
 import { toast } from "sonner";
-import { Loader2, Target } from "lucide-react";
+import { Loader2, Target, History } from "lucide-react";
+
+interface LevelResult {
+  subject: string;
+  level: string | null;
+  percentage: number;
+  created_at: string;
+}
 
 export default function LevelTest() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [subject, setSubject] = useState("");
   const [loading, setLoading] = useState(false);
+  const [history, setHistory] = useState<LevelResult[]>([]);
+
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      const { data } = await supabase
+        .from("results")
+        .select("subject, level, percentage, created_at")
+        .eq("user_id", user.id)
+        .eq("mode", "daraja")
+        .order("created_at", { ascending: false });
+      setHistory((data as any) ?? []);
+    })();
+  }, [user]);
+
+  // Best (latest) per subject
+  const bestPerSubject = new Map<string, LevelResult>();
+  history.forEach((r) => {
+    if (!bestPerSubject.has(r.subject)) bestPerSubject.set(r.subject, r);
+  });
 
   const handleStart = async () => {
     if (!subject) {
@@ -48,9 +77,11 @@ export default function LevelTest() {
           </div>
           <h1 className="text-3xl font-bold tracking-tight">Darajani aniqlash</h1>
         </div>
-        <p className="text-muted-foreground mb-8">O'z darajangizni bilib oling. Teacher: Mubinjon.</p>
+        <p className="text-muted-foreground mb-8">
+          Tillar xalqaro CEFR (A1–C2) standartida, qolgan fanlar Milliy sertifikat (C–A+) standartida baholanadi.
+        </p>
 
-        <div className="rounded-2xl border border-border bg-card p-6 shadow-soft space-y-5">
+        <div className="rounded-2xl border border-border bg-card p-6 shadow-soft space-y-5 mb-8">
           <div className="space-y-2">
             <Label>Fan</Label>
             <Select value={subject} onValueChange={setSubject}>
@@ -65,6 +96,30 @@ export default function LevelTest() {
             {loading ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Savollar tayyorlanmoqda...</> : "Testni boshlash"}
           </Button>
         </div>
+
+        {bestPerSubject.size > 0 && (
+          <div className="rounded-2xl border border-border bg-card p-6 shadow-soft">
+            <div className="flex items-center gap-2 mb-4">
+              <History className="h-4 w-4 text-muted-foreground" />
+              <h2 className="font-semibold">Mening darajalarim</h2>
+            </div>
+            <div className="space-y-2">
+              {Array.from(bestPerSubject.values()).map((r) => (
+                <div key={r.subject} className="flex items-center justify-between rounded-xl border border-border p-3">
+                  <div>
+                    <div className="font-medium">{r.subject}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {new Date(r.created_at).toLocaleDateString("uz-UZ")} · {Math.round(Number(r.percentage))}%
+                    </div>
+                  </div>
+                  {r.level && (
+                    <span className={`px-3 py-1.5 rounded-lg text-sm font-bold ${levelColor(r.level)}`}>{r.level}</span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );
