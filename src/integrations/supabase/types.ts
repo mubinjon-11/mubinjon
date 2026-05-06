@@ -14,6 +14,81 @@ export type Database = {
   }
   public: {
     Tables: {
+      learning_progress: {
+        Row: {
+          best_percentage: number
+          best_score: number
+          best_total: number
+          id: string
+          level: string
+          passed: boolean
+          passed_at: string | null
+          position: number
+          subject: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          best_percentage?: number
+          best_score?: number
+          best_total?: number
+          id?: string
+          level: string
+          passed?: boolean
+          passed_at?: string | null
+          position: number
+          subject: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          best_percentage?: number
+          best_score?: number
+          best_total?: number
+          id?: string
+          level?: string
+          passed?: boolean
+          passed_at?: string | null
+          position?: number
+          subject?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      lessons: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          level: string
+          position: number
+          questions: Json
+          subject: string
+          title: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          level: string
+          position: number
+          questions?: Json
+          subject: string
+          title: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          level?: string
+          position?: number
+          questions?: Json
+          subject?: string
+          title?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           blocked_until: string | null
