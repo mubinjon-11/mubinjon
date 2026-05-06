@@ -22,29 +22,29 @@ Deno.serve(async (req) => {
     // Languages: CEFR A1, A2, B1, B2, C1, C2
     // Other subjects: 1=juda oson ... 6=olimpiada darajasi
     const langDistribution = "A1: 2 ta, A2: 3 ta, B1: 4 ta, B2: 4 ta, C1: 4 ta, C2: 3 ta";
-    const subjDistribution = "1-daraja (juda oson, boshlang'ich sinf): 2 ta, 2-daraja (oson, 5-6 sinf): 3 ta, 3-daraja (o'rta, 7-8 sinf): 4 ta, 4-daraja (qiyin, 9-sinf): 4 ta, 5-daraja (juda qiyin, 10-11 sinf, DTM darajasi): 4 ta, 6-daraja (olimpiada, universitet kirish): 3 ta";
+    const subjDistribution = "C (boshlang'ich, juda oson — 5-6 sinf): 2 ta, C+ (oson — 7-8 sinf): 3 ta, B (o'rta — 9-sinf bazaviy): 4 ta, B+ (o'rta+, DTM bazasi — 10-sinf): 4 ta, A (qiyin, DTM yuqori — 11-sinf): 4 ta, A+ (juda qiyin, olimpiada/universitet kirish darajasi): 3 ta";
 
     const sysPrompt = isLevelTest
       ? `Siz O'zbekiston ta'lim tizimi uchun PROFESSIONAL test tuzuvchisiz va "${subject}" fanining mutaxassisisiz.
 
-VAZIFA: O'quvchining HAQIQIY darajasini aniqlash uchun aynan ${qCount} ta savol tuzing. Bu test daraja aniqlash uchun, shuning uchun savollar JIDDIY va QIYIN bo'lishi kerak. Yengil-yelpi, javobi ko'rinib turgan savollar TAQIQLANADI.
+VAZIFA: O'quvchining HAQIQIY darajasini aniqlash uchun aynan ${qCount} ta savol tuzing. ${isLanguage ? "Til xalqaro CEFR (A1-C2) standartiga to'liq mos kelishi shart." : "Fan O'zbekiston Milliy sertifikat / DTM standartiga (C, C+, B, B+, A, A+) mos bo'lishi shart."} Yengil-yelpi, javobi ko'rinib turgan savollar TAQIQLANADI.
 
 QIYINLIK TAQSIMOTI (qat'iy rioya qiling):
 ${isLanguage ? langDistribution : subjDistribution}
 
 TALABLAR:
 1. Har bir savolda AYNAN 4 ta variant bo'lsin va FAQAT BITTA aniq to'g'ri javob bo'lsin.
-2. Noto'g'ri variantlar (distractor) ham mantiqiy va ishonarli bo'lsin — o'quvchi o'ylab javob berishi kerak. "Kulgili" yoki ochiq-oydin noto'g'ri variantlar TAQIQLANADI.
-3. Savollar TAFAKKURNI tekshirsin: yodlash emas, tushunish va qo'llashni. Formulalarni qo'llash, matnni tahlil qilish, mantiqiy xulosa chiqarish kerak bo'lsin.
-4. ${isLanguage ? `B1+ darajadagi savollarda murakkab grammatik strukturalar (perfect tenses, conditionals, passive, reported speech, modals), idiomatik iboralar, phrasal verbs, kontekstga qarab so'z tanlash bo'lsin. C1-C2 da akademik leksika, nuanslar, advanced collocations bo'lsin. Savol va variantlar fan tilida (${subject}) bo'ladi, ko'rsatma o'zbekcha.` : `Yuqori darajadagi savollarda hisob-kitob, ko'p bosqichli masalalar, tahliliy fikrlash, tushunchalararo bog'liqlik bo'lsin. 5-6 darajadagi savollar DTM va olimpiada darajasida bo'lsin.`}
-5. Savollar TAKRORLANMASIN va bir-biriga o'xshamasin — turli mavzu va ko'nikmalarni qamrab olsin.
-6. Hammasi ${isLanguage ? `${subject} tilida (ko'rsatmalar o'zbekcha)` : "O'ZBEK tilida"} bo'lsin.
+2. Noto'g'ri variantlar (distractor) ham mantiqiy va ishonarli bo'lsin.
+3. Savollar TAFAKKURNI tekshirsin: yodlash emas, tushunish va qo'llashni.
+4. ${isLanguage ? `B1+ darajadan boshlab murakkab grammatika (perfect, conditionals, passive, reported speech, modals), idiomalar, phrasal verbs, kontekstga qarab so'z tanlash. C1-C2 da akademik leksika, advanced collocations. Savol va variantlar ${subject}da, ko'rsatma o'zbekcha.` : `B+ va undan yuqori darajalarda DTM ko'rinishidagi masalalar, ko'p bosqichli hisob-kitob va tahliliy fikrlash bo'lsin. A+ darajadagilar olimpiada darajasida.`}
+5. Savollar takrorlanmasin, turli mavzularni qamrab olsin.
+6. ${isLanguage ? `${subject} tilida (ko'rsatmalar o'zbekcha)` : "O'ZBEK tilida"} bo'lsin.
 
 HAR BIR SAVOL UCHUN difficulty maydoni bo'lishi SHART:
-${isLanguage ? '"A1", "A2", "B1", "B2", "C1", "C2" dan biri.' : '1, 2, 3, 4, 5 yoki 6 (butun son).'}
+${isLanguage ? '"A1", "A2", "B1", "B2", "C1", "C2" dan biri.' : '"C", "C+", "B", "B+", "A", "A+" dan biri.'}
 
 Savollarni difficulty bo'yicha o'sish tartibida bering (oson → qiyin).`
-      : `Siz professional o'qituvchisiz. ${grade ? grade + "-sinf" : ""} o'quvchilari uchun "${subject}" fanidan "${topic}" mavzusida aynan ${qCount} ta test savol yarating. Har bir savolda 4 ta variant va bitta to'g'ri javob bo'lsin. Barchasi O'ZBEK tilida bo'lsin (agar fan "Ingliz tili" bo'lsa, savollar inglizcha bo'lishi mumkin). Savollar takrorlanmasin.`;
+      : `Siz professional o'qituvchisiz. ${grade ? grade + "-sinf" : ""} o'quvchilari uchun "${subject}" fanidan "${topic}" mavzusida aynan ${qCount} ta test savol yarating. Har bir savolda 4 ta variant va bitta to'g'ri javob bo'lsin. Barchasi O'ZBEK tilida bo'lsin (agar fan til bo'lsa, savollar shu tilda bo'lishi mumkin). Savollar takrorlanmasin.`;
 
     const questionItemProps: any = {
       question: { type: "string" },
@@ -55,7 +55,7 @@ Savollarni difficulty bo'yicha o'sish tartibida bering (oson → qiyin).`
     if (isLevelTest) {
       questionItemProps.difficulty = isLanguage
         ? { type: "string", enum: ["A1", "A2", "B1", "B2", "C1", "C2"] }
-        : { type: "integer", minimum: 1, maximum: 6 };
+        : { type: "string", enum: ["C", "C+", "B", "B+", "A", "A+"] };
       requiredFields.push("difficulty");
     }
 
