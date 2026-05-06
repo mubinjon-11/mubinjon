@@ -16,7 +16,6 @@ export const SUBJECTS = [
 
 export const LANGUAGE_SUBJECTS = ["Ingliz tili", "Rus tili", "Koreys tili"];
 
-// Subjects available in the "O'rganish" (learning) module
 export const LEARNING_SUBJECTS = [
   "Ingliz tili",
   "Rus tili",
@@ -29,7 +28,6 @@ export const LEARNING_SUBJECTS = [
   "Informatika",
 ] as const;
 
-// National certificate level labels (B-DTM / Milliy sertifikat darajalari)
 export const NATIONAL_LEVELS = ["C", "C+", "B", "B+", "A", "A+"] as const;
 export const CEFR_LEVELS = ["A1", "A2", "B1", "B2", "C1", "C2"] as const;
 
@@ -37,13 +35,42 @@ export const GRADES = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"];
 
 export type Subject = typeof SUBJECTS[number];
 
+export function getLevelsForSubject(subject: string): readonly string[] {
+  return LANGUAGE_SUBJECTS.includes(subject) ? CEFR_LEVELS : NATIONAL_LEVELS;
+}
+
+/** Simple percentage-based level (CEFR for languages, national cert for others) */
 export function calculateLevel(percentage: number, subject: string): string {
   const isLanguage = LANGUAGE_SUBJECTS.includes(subject);
+  if (isLanguage) {
+    if (percentage >= 95) return "C2";
+    if (percentage >= 85) return "C1";
+    if (percentage >= 70) return "B2";
+    if (percentage >= 55) return "B1";
+    if (percentage >= 35) return "A2";
+    return "A1";
+  }
+  if (percentage >= 95) return "A+";
+  if (percentage >= 85) return "A";
+  if (percentage >= 70) return "B+";
+  if (percentage >= 55) return "B";
+  if (percentage >= 35) return "C+";
+  return "C";
+}
+
+/**
+ * Weighted level calculation for AI-generated level tests.
+ * Difficulty: CEFR (languages) or national cert tiers (C..A+).
+ * Level = highest tier with ≥60% correct, provided all easier tiers ≥50%.
+ */
+export function calculateLevelWeighted(
+  questions: Array<{ difficulty?: string | number }>,
+  answers: number[],
+  correctIndices: number[],
+  subject: string,
+): string {
+  const isLanguage = LANGUAGE_SUBJECTS.includes(subject);
   const tiers = isLanguage
-    ? ["A1", "A2", "B1", "B2", "C1", "C2"]
-    : ["1", "2", "3", "4", "5", "6"];
-  // National certificate labels for non-language subjects
-  const labels = isLanguage
     ? ["A1", "A2", "B1", "B2", "C1", "C2"]
     : ["C", "C+", "B", "B+", "A", "A+"];
 
@@ -76,8 +103,8 @@ export function calculateLevel(percentage: number, subject: string): string {
     if (ratio < 0.5) allLowerOk = false;
   }
 
-  if (achievedIdx === -1) return isLanguage ? "A1" : "C";
-  return labels[achievedIdx];
+  if (achievedIdx === -1) return tiers[0];
+  return tiers[achievedIdx];
 }
 
 export function levelColor(level: string): string {
