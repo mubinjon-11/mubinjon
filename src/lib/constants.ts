@@ -39,43 +39,13 @@ export type Subject = typeof SUBJECTS[number];
 
 export function calculateLevel(percentage: number, subject: string): string {
   const isLanguage = LANGUAGE_SUBJECTS.includes(subject);
-  if (isLanguage) {
-    // CEFR (xalqaro imtihon standarti)
-    if (percentage >= 95) return "C2";
-    if (percentage >= 85) return "C1";
-    if (percentage >= 70) return "B2";
-    if (percentage >= 55) return "B1";
-    if (percentage >= 35) return "A2";
-    return "A1";
-  }
-  // Milliy sertifikat darajalari
-  if (percentage >= 95) return "A+";
-  if (percentage >= 85) return "A";
-  if (percentage >= 70) return "B+";
-  if (percentage >= 55) return "B";
-  if (percentage >= 35) return "C+";
-  return "C";
-}
-
-/**
- * Weighted level calculation for AI-generated level tests.
- * Uses each question's difficulty (CEFR for languages, 1-6 for other subjects).
- * Student's level = highest tier where they got ≥60% correct,
- * provided all easier tiers were ≥50%.
- */
-export function calculateLevelWeighted(
-  questions: Array<{ difficulty?: string | number }>,
-  answers: number[],
-  correctIndices: number[],
-  subject: string,
-): string {
-  const isLanguage = LANGUAGE_SUBJECTS.includes(subject);
   const tiers = isLanguage
     ? ["A1", "A2", "B1", "B2", "C1", "C2"]
     : ["1", "2", "3", "4", "5", "6"];
+  // National certificate labels for non-language subjects
   const labels = isLanguage
     ? ["A1", "A2", "B1", "B2", "C1", "C2"]
-    : ["Boshlang'ich", "Boshlang'ich+", "O'rta", "O'rta+", "Yuqori", "Olimpiada"];
+    : ["C", "C+", "B", "B+", "A", "A+"];
 
   const stats: Record<string, { correct: number; total: number }> = {};
   tiers.forEach((t) => (stats[t] = { correct: 0, total: 0 }));
@@ -106,14 +76,14 @@ export function calculateLevelWeighted(
     if (ratio < 0.5) allLowerOk = false;
   }
 
-  if (achievedIdx === -1) return isLanguage ? "A1" : "Boshlang'ich";
+  if (achievedIdx === -1) return isLanguage ? "A1" : "C";
   return labels[achievedIdx];
 }
 
 export function levelColor(level: string): string {
-  if (["C2", "C1", "Yuqori daraja", "Yuqori", "Olimpiada"].includes(level)) return "bg-success text-success-foreground";
-  if (["B2", "B1", "O'rta daraja", "O'rta", "O'rta+"].includes(level)) return "bg-primary text-primary-foreground";
-  if (["A2", "Boshlang'ich+"].includes(level)) return "bg-warning text-warning-foreground";
-  if (["A1", "Boshlang'ich"].includes(level)) return "bg-muted text-muted-foreground";
+  if (["C2", "C1", "A+", "A"].includes(level)) return "bg-success text-success-foreground";
+  if (["B2", "B1", "B+", "B"].includes(level)) return "bg-primary text-primary-foreground";
+  if (["A2", "C+"].includes(level)) return "bg-warning text-warning-foreground";
+  if (["A1", "C"].includes(level)) return "bg-muted text-muted-foreground";
   return "bg-muted text-muted-foreground";
 }
