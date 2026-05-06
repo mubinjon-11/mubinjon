@@ -11,14 +11,35 @@ export const SUBJECTS = [
   "Ona tili",
   "Adabiyot",
   "Informatika",
+  "Python dasturlash",
 ] as const;
 
 export const LANGUAGE_SUBJECTS = ["Ingliz tili", "Rus tili", "Koreys tili"];
+
+export const LEARNING_SUBJECTS = [
+  "Ingliz tili",
+  "Rus tili",
+  "Koreys tili",
+  "Matematika",
+  "Fizika",
+  "Kimyo",
+  "Biologiya",
+  "Python dasturlash",
+  "Informatika",
+] as const;
+
+export const NATIONAL_LEVELS = ["C", "C+", "B", "B+", "A", "A+"] as const;
+export const CEFR_LEVELS = ["A1", "A2", "B1", "B2", "C1", "C2"] as const;
 
 export const GRADES = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"];
 
 export type Subject = typeof SUBJECTS[number];
 
+export function getLevelsForSubject(subject: string): readonly string[] {
+  return LANGUAGE_SUBJECTS.includes(subject) ? CEFR_LEVELS : NATIONAL_LEVELS;
+}
+
+/** Simple percentage-based level (CEFR for languages, national cert for others) */
 export function calculateLevel(percentage: number, subject: string): string {
   const isLanguage = LANGUAGE_SUBJECTS.includes(subject);
   if (isLanguage) {
@@ -29,17 +50,18 @@ export function calculateLevel(percentage: number, subject: string): string {
     if (percentage >= 35) return "A2";
     return "A1";
   }
-  if (percentage >= 90) return "Yuqori daraja";
-  if (percentage >= 70) return "O'rta daraja";
-  if (percentage >= 50) return "Boshlang'ich+";
-  return "Boshlang'ich";
+  if (percentage >= 95) return "A+";
+  if (percentage >= 85) return "A";
+  if (percentage >= 70) return "B+";
+  if (percentage >= 55) return "B";
+  if (percentage >= 35) return "C+";
+  return "C";
 }
 
 /**
  * Weighted level calculation for AI-generated level tests.
- * Uses each question's difficulty (CEFR for languages, 1-6 for other subjects).
- * Student's level = highest tier where they got ≥60% correct,
- * provided all easier tiers were ≥50%.
+ * Difficulty: CEFR (languages) or national cert tiers (C..A+).
+ * Level = highest tier with ≥60% correct, provided all easier tiers ≥50%.
  */
 export function calculateLevelWeighted(
   questions: Array<{ difficulty?: string | number }>,
@@ -50,10 +72,7 @@ export function calculateLevelWeighted(
   const isLanguage = LANGUAGE_SUBJECTS.includes(subject);
   const tiers = isLanguage
     ? ["A1", "A2", "B1", "B2", "C1", "C2"]
-    : ["1", "2", "3", "4", "5", "6"];
-  const labels = isLanguage
-    ? ["A1", "A2", "B1", "B2", "C1", "C2"]
-    : ["Boshlang'ich", "Boshlang'ich+", "O'rta", "O'rta+", "Yuqori", "Olimpiada"];
+    : ["C", "C+", "B", "B+", "A", "A+"];
 
   const stats: Record<string, { correct: number; total: number }> = {};
   tiers.forEach((t) => (stats[t] = { correct: 0, total: 0 }));
@@ -84,14 +103,14 @@ export function calculateLevelWeighted(
     if (ratio < 0.5) allLowerOk = false;
   }
 
-  if (achievedIdx === -1) return isLanguage ? "A1" : "Boshlang'ich";
-  return labels[achievedIdx];
+  if (achievedIdx === -1) return tiers[0];
+  return tiers[achievedIdx];
 }
 
 export function levelColor(level: string): string {
-  if (["C2", "C1", "Yuqori daraja", "Yuqori", "Olimpiada"].includes(level)) return "bg-success text-success-foreground";
-  if (["B2", "B1", "O'rta daraja", "O'rta", "O'rta+"].includes(level)) return "bg-primary text-primary-foreground";
-  if (["A2", "Boshlang'ich+"].includes(level)) return "bg-warning text-warning-foreground";
-  if (["A1", "Boshlang'ich"].includes(level)) return "bg-muted text-muted-foreground";
+  if (["C2", "C1", "A+", "A"].includes(level)) return "bg-success text-success-foreground";
+  if (["B2", "B1", "B+", "B"].includes(level)) return "bg-primary text-primary-foreground";
+  if (["A2", "C+"].includes(level)) return "bg-warning text-warning-foreground";
+  if (["A1", "C"].includes(level)) return "bg-muted text-muted-foreground";
   return "bg-muted text-muted-foreground";
 }

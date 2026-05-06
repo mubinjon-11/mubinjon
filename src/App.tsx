@@ -15,6 +15,10 @@ import ResultPage from "./pages/ResultPage";
 import TeacherDashboard from "./pages/TeacherDashboard";
 import CreateTeacherTest from "./pages/CreateTeacherTest";
 import AdminDashboard from "./pages/AdminDashboard";
+import Learn from "./pages/Learn";
+import LearnSubject from "./pages/LearnSubject";
+import LearnLevel from "./pages/LearnLevel";
+import LearnLesson from "./pages/LearnLesson";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -44,6 +48,12 @@ const App = () => (
 
             {/* Admin route */}
             <Route path="/admin" element={<ProtectedRoute role="admin"><AdminDashboard /></ProtectedRoute>} />
+
+            {/* Learning module — available to all authenticated roles */}
+            <Route path="/organish" element={<ProtectedRoute role={["oquvchi", "oqituvchi", "admin"]}><Learn /></ProtectedRoute>} />
+            <Route path="/organish/:subject" element={<ProtectedRoute role={["oquvchi", "oqituvchi", "admin"]}><LearnSubject /></ProtectedRoute>} />
+            <Route path="/organish/:subject/:level" element={<ProtectedRoute role={["oquvchi", "oqituvchi", "admin"]}><LearnLevel /></ProtectedRoute>} />
+            <Route path="/organish/:subject/:level/:position" element={<ProtectedRoute role={["oquvchi", "oqituvchi", "admin"]}><LearnLesson /></ProtectedRoute>} />
 
             <Route path="*" element={<NotFound />} />
           </Routes>
