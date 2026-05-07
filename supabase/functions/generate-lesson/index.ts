@@ -7,7 +7,8 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const LANGUAGE_SUBJECTS = ["Ingliz tili", "Rus tili", "Koreys tili"];
+const LANGUAGE_SUBJECTS = ["Ingliz tili", "English Listening", "Rus tili", "Koreys tili", "Xitoy tili", "Arab tili"];
+const LISTENING_SUBJECT = "English Listening";
 
 const CEFR = ["A1", "A2", "B1", "B2", "C1", "C2"];
 const NAT = ["C", "C+", "B", "B+", "A", "A+"];
@@ -56,13 +57,18 @@ Deno.serve(async (req) => {
       ? `Daraja CEFR (${level}) xalqaro standartiga to'liq mos bo'lsin.`
       : `Daraja O'zbekiston Milliy sertifikat / DTM standartining "${level}" darajasiga mos bo'lsin.`;
 
+    const isListening = subject === LISTENING_SUBJECT;
+    const listeningNote = isListening
+      ? `\nMUHIM (Listening): Bu tinglab tushunish darsi. "content" ichida o'quvchiga **English** tilida 4-8 ta qisqa jumla/audio matn (transcript) bering — ular speech-synthesis orqali ovozli o'qiladi. Mavzuga oid grammatik tushuntirish va lug'atni o'zbekcha bering. Har bir savol AUDIO ASOSIDA bo'lsin: savol matnida tinglash kerak bo'lgan inglizcha so'z/jumla "[LISTEN: matn]" formatida yozilsin (masalan: "Quyidagi so'zni tinglang: [LISTEN: through]"). 4 ta variant FONETIK JIHATDAN BIR-BIRIGA O'XSHASH inglizcha so'zlar bo'lsin (masalan: through / though / thought / thorough). To'g'ri javob — eshitilgan so'z.`
+      : "";
+
     const sysPrompt = `Siz "${subject}" fanidan PROFESSIONAL o'qituvchisiz. ${standardNote}
 
 VAZIFA: ${level} darajasi uchun ${position}-tartibli DARS yarating.
 - Dars mavzusi shu darajada o'qitilishi kerak bo'lgan keyingi mantiqiy mavzu bo'lsin (${position} - tartib raqami).
 - "title": qisqa va aniq mavzu nomi.
 - "content": batafsil o'quv matni (markdown ishlatish mumkin: **bold**, ro'yxatlar, misollar, \`kod\`). Kamida 400 so'z. ${isLanguage ? `Til darslari uchun ${subject}da misollar va o'zbekcha tushuntirish bering.` : "Formulalar, qoidalar, yechim usullari va kamida 2 ta yechilgan misol bo'lsin."}
-- "questions": 8 ta test savoli, har biri 4 variant va bitta to'g'ri javobli, faqat shu darsda o'tilgan materialdan.
+- "questions": 8 ta test savoli, har biri 4 variant va bitta to'g'ri javobli, faqat shu darsda o'tilgan materialdan.${listeningNote}
 
 Hammasi o'zbek tilida bo'lsin (til darslarida misollar shu tilda).`;
 

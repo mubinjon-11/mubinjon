@@ -15,8 +15,10 @@ Deno.serve(async (req) => {
     const isLevelTest = mode === "daraja";
     const qCount = isLevelTest ? 20 : Math.min(Math.max(Number(count) || 10, 1), 30);
 
-    const LANGUAGE_SUBJECTS = ["Ingliz tili", "Rus tili", "Koreys tili"];
+    const LANGUAGE_SUBJECTS = ["Ingliz tili", "English Listening", "Rus tili", "Koreys tili", "Xitoy tili", "Arab tili"];
+    const LISTENING_SUBJECT = "English Listening";
     const isLanguage = LANGUAGE_SUBJECTS.includes(subject);
+    const isListening = subject === LISTENING_SUBJECT;
 
     // Strict difficulty distribution for level tests (20 questions)
     // Languages: CEFR A1, A2, B1, B2, C1, C2
@@ -45,6 +47,10 @@ ${isLanguage ? '"A1", "A2", "B1", "B2", "C1", "C2" dan biri.' : '"C", "C+", "B",
 
 Savollarni difficulty bo'yicha o'sish tartibida bering (oson → qiyin).`
       : `Siz professional o'qituvchisiz. ${grade ? grade + "-sinf" : ""} o'quvchilari uchun "${subject}" fanidan "${topic}" mavzusida aynan ${qCount} ta test savol yarating. Har bir savolda 4 ta variant va bitta to'g'ri javob bo'lsin. Barchasi O'ZBEK tilida bo'lsin (agar fan til bo'lsa, savollar shu tilda bo'lishi mumkin). Savollar takrorlanmasin.`;
+
+    const listeningInstruction = isListening
+      ? `\n\nMUHIM (English Listening): Har bir savol AUDIO TINGLASH asosida bo'lsin. Savol matnida tinglash kerak bo'lgan inglizcha so'z yoki qisqa jumla "[LISTEN: matn]" formatida bo'lsin. Masalan: "Quyidagini tinglang va to'g'ri javobni tanlang: [LISTEN: through the woods]". 4 ta variant FONETIK BIR-BIRIGA O'XSHASH inglizcha so'zlar/jumlalar bo'lsin (minimal pairs, homophones, similar sounds). Misol: through / though / thought / thorough; ship / sheep / cheap / chip; write / right / rite / wright. To'g'ri javob — eshitilgan matn.`
+      : "";
 
     const questionItemProps: any = {
       question: { type: "string" },
@@ -92,8 +98,8 @@ Savollarni difficulty bo'yicha o'sish tartibida bering (oson → qiyin).`
       body: JSON.stringify({
         model: isLevelTest ? "google/gemini-2.5-pro" : "google/gemini-3-flash-preview",
         messages: [
-          { role: "system", content: sysPrompt },
-          { role: "user", content: `Iltimos, aynan ${qCount} ta savol yarating va save_questions tool orqali qaytaring.${isLevelTest ? " Qiyinlik taqsimotiga QAT'IY rioya qiling va har bir savolga difficulty belgilang." : ""}` },
+          { role: "system", content: sysPrompt + listeningInstruction },
+          { role: "user", content: `Iltimos, aynan ${qCount} ta savol yarating va save_questions tool orqali qaytaring.${isLevelTest ? " Qiyinlik taqsimotiga QAT'IY rioya qiling va har bir savolga difficulty belgilang." : ""}${isListening ? " Har bir savolga [LISTEN: ...] bloki kiriting va variantlarni fonetik o'xshash so'zlardan tuzing." : ""}` },
         ],
         tools,
         tool_choice: { type: "function", function: { name: "save_questions" } },
