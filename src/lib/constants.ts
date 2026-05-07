@@ -17,18 +17,7 @@ export const SUBJECTS = [
 
 export const LANGUAGE_SUBJECTS = ["Ingliz tili", "Rus tili", "Koreys tili"];
 
-export const LEARNING_SUBJECTS = [
-  "Ingliz tili",
-  "Rus tili",
-  "Koreys tili",
-  "Matematika",
-  "Fizika",
-  "Kimyo",
-  "Biologiya",
-  "Python dasturlash",
-  "C++ dasturlash",
-  "Informatika",
-] as const;
+export const LEARNING_SUBJECTS = SUBJECTS;
 
 export const NATIONAL_LEVELS = ["C", "C+", "B", "B+", "A", "A+"] as const;
 export const CEFR_LEVELS = ["A1", "A2", "B1", "B2", "C1", "C2"] as const;
