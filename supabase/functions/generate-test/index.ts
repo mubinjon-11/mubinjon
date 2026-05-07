@@ -48,6 +48,10 @@ ${isLanguage ? '"A1", "A2", "B1", "B2", "C1", "C2" dan biri.' : '"C", "C+", "B",
 Savollarni difficulty bo'yicha o'sish tartibida bering (oson → qiyin).`
       : `Siz professional o'qituvchisiz. ${grade ? grade + "-sinf" : ""} o'quvchilari uchun "${subject}" fanidan "${topic}" mavzusida aynan ${qCount} ta test savol yarating. Har bir savolda 4 ta variant va bitta to'g'ri javob bo'lsin. Barchasi O'ZBEK tilida bo'lsin (agar fan til bo'lsa, savollar shu tilda bo'lishi mumkin). Savollar takrorlanmasin.`;
 
+    const listeningInstruction = isListening
+      ? `\n\nMUHIM (English Listening): Har bir savol AUDIO TINGLASH asosida bo'lsin. Savol matnida tinglash kerak bo'lgan inglizcha so'z yoki qisqa jumla "[LISTEN: matn]" formatida bo'lsin. Masalan: "Quyidagini tinglang va to'g'ri javobni tanlang: [LISTEN: through the woods]". 4 ta variant FONETIK BIR-BIRIGA O'XSHASH inglizcha so'zlar/jumlalar bo'lsin (minimal pairs, homophones, similar sounds). Misol: through / though / thought / thorough; ship / sheep / cheap / chip; write / right / rite / wright. To'g'ri javob — eshitilgan matn.`
+      : "";
+
     const questionItemProps: any = {
       question: { type: "string" },
       options: { type: "array", items: { type: "string" }, minItems: 4, maxItems: 4 },
