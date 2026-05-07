@@ -13,6 +13,10 @@ const ICONS: Record<string, string> = {
   "Fizika": "⚛️",
   "Kimyo": "🧪",
   "Biologiya": "🧬",
+  "Tarix": "🏛️",
+  "Geografiya": "🌍",
+  "Ona tili": "📖",
+  "Adabiyot": "📚",
   "Informatika": "💻",
 };
 
