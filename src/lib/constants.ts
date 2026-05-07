@@ -12,6 +12,7 @@ export const SUBJECTS = [
   "Adabiyot",
   "Informatika",
   "Python dasturlash",
+  "C++ dasturlash",
 ] as const;
 
 export const LANGUAGE_SUBJECTS = ["Ingliz tili", "Rus tili", "Koreys tili"];
@@ -25,6 +26,7 @@ export const LEARNING_SUBJECTS = [
   "Kimyo",
   "Biologiya",
   "Python dasturlash",
+  "C++ dasturlash",
   "Informatika",
 ] as const;
 

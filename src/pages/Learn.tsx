@@ -11,7 +11,8 @@ const ICONS: Record<string, string> = {
   "Fizika": "⚛️",
   "Kimyo": "🧪",
   "Biologiya": "🧬",
-  "Python dasturlash": "🐍",
+  "Python dasturlash": "</>",
+  "C++ dasturlash": "C++",
   "Informatika": "💻",
 };
 
