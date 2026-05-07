@@ -6,8 +6,9 @@ import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { getLevelsForSubject, LEARNING_SUBJECTS } from "@/lib/constants";
-import { Loader2, CheckCircle2, ChevronLeft, ChevronRight, BookOpen, ArrowRight } from "lucide-react";
+import { Loader2, CheckCircle2, ChevronLeft, ChevronRight, BookOpen, ArrowRight, Volume2 } from "lucide-react";
 import { toast } from "sonner";
+import { ListenText } from "@/components/ListenText";
 
 interface Q { question: string; options: string[]; correct_index: number }
 
