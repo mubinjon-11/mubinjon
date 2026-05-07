@@ -2,6 +2,8 @@ import { Link } from "react-router-dom";
 import { AppHeader } from "@/components/AppHeader";
 import { LEARNING_SUBJECTS } from "@/lib/constants";
 import { BookOpen } from "lucide-react";
+import iconPython from "@/assets/icon-python.png";
+import iconCpp from "@/assets/icon-cpp.png";
 
 const ICONS: Record<string, string> = {
   "Ingliz tili": "🇬🇧",
@@ -11,9 +13,12 @@ const ICONS: Record<string, string> = {
   "Fizika": "⚛️",
   "Kimyo": "🧪",
   "Biologiya": "🧬",
-  "Python dasturlash": "</>",
-  "C++ dasturlash": "C++",
   "Informatika": "💻",
+};
+
+const IMAGE_ICONS: Record<string, string> = {
+  "Python dasturlash": iconPython,
+  "C++ dasturlash": iconCpp,
 };
 
 export default function Learn() {
