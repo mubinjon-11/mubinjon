@@ -156,6 +156,25 @@ export default function Auth() {
     navigate(parsed.data.role === "oqituvchi" ? "/oqituvchi" : "/dashboard");
   };
 
+  const handleGuestLogin = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("guest-signup", { body: {} });
+      if (error || !data?.email) throw error ?? new Error("Mehmon akkaunti yaratilmadi");
+      const { error: sErr } = await supabase.auth.signInWithPassword({
+        email: data.email,
+        password: data.password,
+      });
+      if (sErr) throw sErr;
+      toast.success("Mehmon sifatida kirdingiz!");
+      navigate("/dashboard");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Xatolik yuz berdi");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <div className="w-full max-w-md">
