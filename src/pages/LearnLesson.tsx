@@ -147,7 +147,7 @@ export default function LearnLesson() {
               </div>
             </div>
             <article className="prose prose-sm md:prose-base max-w-none rounded-2xl border border-border bg-card p-6 shadow-soft whitespace-pre-wrap">
-              {lesson.content}
+              <ListenText text={lesson.content} />
             </article>
             <div className="mt-6 flex justify-end">
               <Button onClick={() => setPhase("quiz")} className="gradient-primary">
