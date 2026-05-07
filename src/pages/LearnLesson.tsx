@@ -159,6 +159,7 @@ export default function LearnLesson() {
 
         {phase === "quiz" && (
           <QuizView
+            subject={subject}
             questions={lesson.questions}
             current={current} setCurrent={setCurrent}
             answers={answers} setAnswers={setAnswers}
