@@ -2,6 +2,8 @@ import { Link } from "react-router-dom";
 import { AppHeader } from "@/components/AppHeader";
 import { LEARNING_SUBJECTS } from "@/lib/constants";
 import { BookOpen } from "lucide-react";
+import iconPython from "@/assets/icon-python.png";
+import iconCpp from "@/assets/icon-cpp.png";
 
 const ICONS: Record<string, string> = {
   "Ingliz tili": "🇬🇧",
@@ -11,8 +13,12 @@ const ICONS: Record<string, string> = {
   "Fizika": "⚛️",
   "Kimyo": "🧪",
   "Biologiya": "🧬",
-  "Python dasturlash": "🐍",
   "Informatika": "💻",
+};
+
+const IMAGE_ICONS: Record<string, string> = {
+  "Python dasturlash": iconPython,
+  "C++ dasturlash": iconCpp,
 };
 
 export default function Learn() {
@@ -35,7 +41,13 @@ export default function Learn() {
               to={`/organish/${encodeURIComponent(s)}`}
               className="group rounded-2xl border border-border bg-card p-6 shadow-soft transition-base hover:border-primary/40 hover:shadow-md"
             >
-              <div className="text-4xl mb-3">{ICONS[s] ?? "📘"}</div>
+              <div className="mb-3 h-12 flex items-center">
+                {IMAGE_ICONS[s] ? (
+                  <img src={IMAGE_ICONS[s]} alt={s} loading="lazy" width={48} height={48} className="h-12 w-12 object-contain" />
+                ) : (
+                  <div className="text-4xl">{ICONS[s] ?? "📘"}</div>
+                )}
+              </div>
               <h2 className="text-lg font-semibold group-hover:text-primary transition-base">{s}</h2>
               <p className="text-sm text-muted-foreground mt-1">Darajalarni ko'rish →</p>
             </Link>
