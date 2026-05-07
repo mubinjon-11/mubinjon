@@ -15,8 +15,10 @@ Deno.serve(async (req) => {
     const isLevelTest = mode === "daraja";
     const qCount = isLevelTest ? 20 : Math.min(Math.max(Number(count) || 10, 1), 30);
 
-    const LANGUAGE_SUBJECTS = ["Ingliz tili", "Rus tili", "Koreys tili"];
+    const LANGUAGE_SUBJECTS = ["Ingliz tili", "English Listening", "Rus tili", "Koreys tili", "Xitoy tili", "Arab tili"];
+    const LISTENING_SUBJECT = "English Listening";
     const isLanguage = LANGUAGE_SUBJECTS.includes(subject);
+    const isListening = subject === LISTENING_SUBJECT;
 
     // Strict difficulty distribution for level tests (20 questions)
     // Languages: CEFR A1, A2, B1, B2, C1, C2
