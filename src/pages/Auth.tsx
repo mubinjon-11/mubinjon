@@ -252,6 +252,22 @@ export default function Auth() {
               </form>
             </TabsContent>
           </Tabs>
+
+          <div className="mt-6 pt-6 border-t border-border">
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              disabled={loading}
+              onClick={handleGuestLogin}
+            >
+              {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              Mehmon sifatida kirish
+            </Button>
+            <p className="text-xs text-muted-foreground text-center mt-2">
+              Sayt siz uchun avtomatik akkaunt yaratadi
+            </p>
+          </div>
         </div>
       </div>
     </div>
