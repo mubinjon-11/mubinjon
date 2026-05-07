@@ -198,10 +198,20 @@ export default function LearnLesson() {
   );
 }
 
-function QuizView({ questions, current, setCurrent, answers, setAnswers, onSubmit, submitting }: any) {
+function QuizView({ subject, questions, current, setCurrent, answers, setAnswers, onSubmit, submitting }: any) {
   const q = questions[current];
   const allAnswered = Object.keys(answers).length === questions.length;
   const selected = answers[current];
+  const isListening = subject === "English Listening";
+
+  const speakOpt = (e: React.MouseEvent, text: string) => {
+    e.stopPropagation();
+    if (!("speechSynthesis" in window)) return;
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = "en-US"; u.rate = 0.9;
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(u);
+  };
 
   return (
     <>
@@ -212,18 +222,25 @@ function QuizView({ questions, current, setCurrent, answers, setAnswers, onSubmi
         <Progress value={((current + 1) / questions.length) * 100} />
       </div>
       <div className="rounded-2xl border border-border bg-card p-6 shadow-soft mb-6">
-        <h3 className="font-semibold mb-5">{current + 1}. {q.question}</h3>
+        <h3 className="font-semibold mb-5">{current + 1}. <ListenText text={q.question} /></h3>
         <div className="space-y-3">
           {q.options.map((opt: string, idx: number) => {
             const isSel = selected === idx;
             return (
               <button key={idx} onClick={() => setAnswers({ ...answers, [current]: idx })}
                 className={`w-full text-left p-4 rounded-xl border-2 transition-base ${isSel ? "border-primary bg-primary/5" : "border-border hover:border-primary/40"}`}>
-                <div className="flex gap-3">
+                <div className="flex gap-3 items-start">
                   <div className={`h-7 w-7 shrink-0 rounded-lg flex items-center justify-center text-sm font-semibold ${isSel ? "gradient-primary text-primary-foreground" : "bg-secondary"}`}>
                     {String.fromCharCode(65 + idx)}
                   </div>
-                  <span className="pt-0.5">{opt}</span>
+                  <span className="pt-0.5 flex-1">{opt}</span>
+                  {isListening && (
+                    <span role="button" onClick={(e) => speakOpt(e, opt)}
+                      className="ml-2 inline-flex items-center justify-center h-7 w-7 rounded-md bg-secondary hover:bg-secondary/80"
+                      title="Variantni tinglash">
+                      <Volume2 className="h-4 w-4" />
+                    </span>
+                  )}
                 </div>
               </button>
             );
