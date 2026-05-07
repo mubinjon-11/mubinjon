@@ -132,11 +132,20 @@ export default function TestRunner() {
 
         <div className="rounded-2xl border border-border bg-card p-6 md:p-8 shadow-soft mb-6">
           <h2 className="text-lg md:text-xl font-semibold mb-6 leading-relaxed">
-            {current + 1}. {q.question}
+            {current + 1}. <ListenText text={q.question} />
           </h2>
           <div className="space-y-3">
             {q.options.map((opt, idx) => {
               const isSel = selected === idx;
+              const isListeningOpt = subject === "English Listening";
+              const speakOpt = (e: React.MouseEvent) => {
+                e.stopPropagation();
+                if (!("speechSynthesis" in window)) return;
+                const u = new SpeechSynthesisUtterance(opt);
+                u.lang = "en-US"; u.rate = 0.9;
+                window.speechSynthesis.cancel();
+                window.speechSynthesis.speak(u);
+              };
               return (
                 <button
                   key={idx}
@@ -153,7 +162,17 @@ export default function TestRunner() {
                     }`}>
                       {String.fromCharCode(65 + idx)}
                     </div>
-                    <span className="pt-0.5">{opt}</span>
+                    <span className="pt-0.5 flex-1">{opt}</span>
+                    {isListeningOpt && (
+                      <span
+                        role="button"
+                        onClick={speakOpt}
+                        className="ml-2 inline-flex items-center justify-center h-7 w-7 rounded-md bg-secondary hover:bg-secondary/80 text-foreground"
+                        title="Variantni tinglash"
+                      >
+                        <Volume2 className="h-4 w-4" />
+                      </span>
+                    )}
                   </div>
                 </button>
               );
