@@ -1,13 +1,17 @@
 export const SUBJECTS = [
   "Ingliz tili",
+  "English Listening",
   "Rus tili",
   "Koreys tili",
+  "Xitoy tili",
+  "Arab tili",
   "Matematika",
   "Fizika",
   "Kimyo",
   "Biologiya",
   "Tarix",
   "Geografiya",
+  "Iqtisodiyot",
   "Ona tili",
   "Adabiyot",
   "Informatika",
@@ -15,7 +19,16 @@ export const SUBJECTS = [
   "C++ dasturlash",
 ] as const;
 
-export const LANGUAGE_SUBJECTS = ["Ingliz tili", "Rus tili", "Koreys tili"];
+export const LANGUAGE_SUBJECTS = [
+  "Ingliz tili",
+  "English Listening",
+  "Rus tili",
+  "Koreys tili",
+  "Xitoy tili",
+  "Arab tili",
+];
+
+export const LISTENING_SUBJECT = "English Listening";
 
 export const LEARNING_SUBJECTS = SUBJECTS;
 
