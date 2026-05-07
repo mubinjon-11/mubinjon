@@ -7,14 +7,18 @@ import iconCpp from "@/assets/icon-cpp.png";
 
 const ICONS: Record<string, string> = {
   "Ingliz tili": "🇬🇧",
+  "English Listening": "🎧",
   "Rus tili": "🇷🇺",
   "Koreys tili": "🇰🇷",
+  "Xitoy tili": "🇨🇳",
+  "Arab tili": "🇸🇦",
   "Matematika": "📐",
   "Fizika": "⚛️",
   "Kimyo": "🧪",
   "Biologiya": "🧬",
   "Tarix": "🏛️",
   "Geografiya": "🌍",
+  "Iqtisodiyot": "💹",
   "Ona tili": "📖",
   "Adabiyot": "📚",
   "Informatika": "💻",
