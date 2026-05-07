@@ -98,8 +98,8 @@ Savollarni difficulty bo'yicha o'sish tartibida bering (oson → qiyin).`
       body: JSON.stringify({
         model: isLevelTest ? "google/gemini-2.5-pro" : "google/gemini-3-flash-preview",
         messages: [
-          { role: "system", content: sysPrompt },
-          { role: "user", content: `Iltimos, aynan ${qCount} ta savol yarating va save_questions tool orqali qaytaring.${isLevelTest ? " Qiyinlik taqsimotiga QAT'IY rioya qiling va har bir savolga difficulty belgilang." : ""}` },
+          { role: "system", content: sysPrompt + listeningInstruction },
+          { role: "user", content: `Iltimos, aynan ${qCount} ta savol yarating va save_questions tool orqali qaytaring.${isLevelTest ? " Qiyinlik taqsimotiga QAT'IY rioya qiling va har bir savolga difficulty belgilang." : ""}${isListening ? " Har bir savolga [LISTEN: ...] bloki kiriting va variantlarni fonetik o'xshash so'zlardan tuzing." : ""}` },
         ],
         tools,
         tool_choice: { type: "function", function: { name: "save_questions" } },
