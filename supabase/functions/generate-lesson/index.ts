@@ -7,7 +7,8 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const LANGUAGE_SUBJECTS = ["Ingliz tili", "Rus tili", "Koreys tili"];
+const LANGUAGE_SUBJECTS = ["Ingliz tili", "English Listening", "Rus tili", "Koreys tili", "Xitoy tili", "Arab tili"];
+const LISTENING_SUBJECT = "English Listening";
 
 const CEFR = ["A1", "A2", "B1", "B2", "C1", "C2"];
 const NAT = ["C", "C+", "B", "B+", "A", "A+"];
