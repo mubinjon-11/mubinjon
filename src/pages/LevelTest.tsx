@@ -48,6 +48,10 @@ export default function LevelTest() {
       toast.error("Fanni tanlang");
       return;
     }
+    if (isGuest) {
+      toast.error("Bu funksiyadan foydalanish uchun akkaunt oching");
+      return;
+    }
     setLoading(true);
     try {
       toast.message("AI 20 ta savol tayyorlamoqda...");
@@ -67,6 +71,8 @@ export default function LevelTest() {
     }
   };
 
+  const isGuest = Boolean((user?.user_metadata as any)?.is_guest);
+
   return (
     <div className="min-h-screen bg-background">
       <AppHeader />
@@ -77,9 +83,17 @@ export default function LevelTest() {
           </div>
           <h1 className="text-3xl font-bold tracking-tight">Darajani aniqlash</h1>
         </div>
-        <p className="text-muted-foreground mb-8">
-          Tillar xalqaro CEFR (A1–C2) standartida, qolgan fanlar Milliy sertifikat (C–A+) standartida baholanadi.
+        <p className="text-muted-foreground mb-4">
+          Tillar xalqaro CEFR (A1–C2), English Listening — IELTS (4.5–8.0), qolgan fanlar Milliy sertifikat (C–A+) standartida baholanadi.
         </p>
+
+        {isGuest && (
+          <div className="mb-6 rounded-xl border-2 border-destructive bg-destructive/10 p-4">
+            <p className="text-destructive font-bold text-base">
+              Bu funksiyadan foydalanish uchun siz akkaunt ochishingiz kerak!
+            </p>
+          </div>
+        )}
 
         <div className="rounded-2xl border border-border bg-card p-6 shadow-soft space-y-5 mb-8">
           <div className="space-y-2">
