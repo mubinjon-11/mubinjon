@@ -4,6 +4,12 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+function hashStr(s: string): number {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
+  return h;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -11,6 +17,7 @@ Deno.serve(async (req) => {
     const { subject, topic, grade, count, mode } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
+    const isDriving = subject === "Guvohnoma";
 
     const isLevelTest = mode === "daraja";
     const qCount = isLevelTest ? 20 : Math.min(Math.max(Number(count) || 10, 1), 30);
@@ -30,7 +37,7 @@ Deno.serve(async (req) => {
       subject === "Tibbiyot"
         ? "\n\nKONTEKST: \"Tibbiyot\" fani — hamshiralik ishi va doktorlik amaliyoti bo'yicha. Savollar bemorni davolash, dori-darmon dozalari, birinchi tibbiy yordam, anatomiya/fiziologiya, asepsis-antisepsis, in'ektsiya texnikasi, EKG asoslari, klinik holatlar va hamshira/shifokor amaliyotidagi haqiqiy vaziyatlar bo'yicha bo'lsin."
         : subject === "Guvohnoma"
-        ? "\n\nKONTEKST: \"Guvohnoma\" fani — O'zbekiston haydovchilik guvohnomasini olishga tayyorgarlik. Savollar yo'l harakati qoidalari (YHQ), yo'l belgilari va chiziqlari, chorrahalardan o'tish, ustuvorlik, jarima va javobgarlik, avtomobil tuzilishi asoslari, birinchi tibbiy yordam — barchasi O'zbekiston DTM/IIV imtihon namunasiga mos bo'lsin."
+        ? "\n\nKONTEKST: \"Guvohnoma\" fani — O'zbekiston haydovchilik guvohnomasini olishga tayyorgarlik. Savollar yo'l harakati qoidalari (YHQ), yo'l belgilari va chiziqlari, chorrahalardan o'tish, ustuvorlik, jarima va javobgarlik, avtomobil tuzilishi asoslari, birinchi tibbiy yordam — barchasi O'zbekiston DTM/IIV imtihon namunasiga mos bo'lsin.\n\nQIYINLIK: Savollar YUQORI murakkablikda bo'lsin — ko'p mashinali chorraha vaziyatlari, kam uchraydigan yo'l belgilari, istisnolar, ko'p bosqichli mantiqiy yechim talab qiladiganlar. Yengil-yelpi savollar TAQIQLANADI.\n\nRASM (MAJBURIY): Har bir savolda \"image_prompt\" maydoni bo'lsin — INGLIZ tilida, savol vaziyatini aniq tasvirlaydigan qisqa prompt (1-2 jumla). Bu prompt asosida rasm avtomatik generatsiya qilinadi. Misollar: \"Top-down view of a 4-way intersection with traffic lights, a red car going straight, a blue car turning left, a yellow car waiting on the right, road markings clearly visible, realistic 3d render\" yoki \"Close-up of an Uzbek road sign: red triangle with black exclamation mark on white background, daylight\". Promptlarni aniq, vizual va savol mantig'iga 100% mos qiling, aks holda javob noto'g'ri bo'ladi."
         : "";
 
     const sysPrompt = isLevelTest
@@ -78,6 +85,10 @@ Savollarni difficulty bo'yicha o'sish tartibida bering (oson → qiyin).`
         ? { type: "string", enum: ["A1", "A2", "B1", "B2", "C1", "C2"] }
         : { type: "string", enum: ["C", "C+", "B", "B+", "A", "A+"] };
       requiredFields.push("difficulty");
+    }
+    if (isDriving) {
+      questionItemProps.image_prompt = { type: "string", description: "English visual prompt for the scene" };
+      requiredFields.push("image_prompt");
     }
 
     const tools = [{
@@ -142,7 +153,17 @@ Savollarni difficulty bo'yicha o'sish tartibida bering (oson → qiyin).`
     if (!toolCall) throw new Error("AI savol qaytarmadi");
     const args = JSON.parse(toolCall.function.arguments);
 
-    return new Response(JSON.stringify({ questions: args.questions }), {
+    let questions = args.questions as any[];
+    if (isDriving) {
+      questions = questions.map((q) => {
+        const prompt = (q.image_prompt || `${q.question} — Uzbek driving exam scene, realistic illustration`).slice(0, 400);
+        const seed = Math.abs(hashStr(q.question || prompt)) % 1000000;
+        const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=640&height=400&nologo=true&seed=${seed}`;
+        return { ...q, image_url: url };
+      });
+    }
+
+    return new Response(JSON.stringify({ questions }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {

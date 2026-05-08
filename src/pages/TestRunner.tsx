@@ -14,6 +14,7 @@ interface Question {
   question: string;
   options: string[];
   correct_index: number;
+  image_url?: string;
 }
 
 export default function TestRunner() {
@@ -131,6 +132,14 @@ export default function TestRunner() {
         </div>
 
         <div className="rounded-2xl border border-border bg-card p-6 md:p-8 shadow-soft mb-6">
+          {q.image_url && (
+            <img
+              src={q.image_url}
+              alt="Savol uchun rasm"
+              loading="lazy"
+              className="w-full max-h-80 object-contain rounded-xl border border-border bg-secondary/30 mb-4"
+            />
+          )}
           {subject === "English Listening" ? (
             <ListeningPrompt index={current} text={q.question} />
           ) : (
