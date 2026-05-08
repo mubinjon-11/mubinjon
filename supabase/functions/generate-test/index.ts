@@ -26,6 +26,13 @@ Deno.serve(async (req) => {
     const langDistribution = "A1: 2 ta, A2: 3 ta, B1: 4 ta, B2: 4 ta, C1: 4 ta, C2: 3 ta";
     const subjDistribution = "C (boshlang'ich, juda oson — 5-6 sinf): 2 ta, C+ (oson — 7-8 sinf): 3 ta, B (o'rta — 9-sinf bazaviy): 4 ta, B+ (o'rta+, DTM bazasi — 10-sinf): 4 ta, A (qiyin, DTM yuqori — 11-sinf): 4 ta, A+ (juda qiyin, olimpiada/universitet kirish darajasi): 3 ta";
 
+    const subjectContext =
+      subject === "Tibbiyot"
+        ? "\n\nKONTEKST: \"Tibbiyot\" fani — hamshiralik ishi va doktorlik amaliyoti bo'yicha. Savollar bemorni davolash, dori-darmon dozalari, birinchi tibbiy yordam, anatomiya/fiziologiya, asepsis-antisepsis, in'ektsiya texnikasi, EKG asoslari, klinik holatlar va hamshira/shifokor amaliyotidagi haqiqiy vaziyatlar bo'yicha bo'lsin."
+        : subject === "Guvohnoma"
+        ? "\n\nKONTEKST: \"Guvohnoma\" fani — O'zbekiston haydovchilik guvohnomasini olishga tayyorgarlik. Savollar yo'l harakati qoidalari (YHQ), yo'l belgilari va chiziqlari, chorrahalardan o'tish, ustuvorlik, jarima va javobgarlik, avtomobil tuzilishi asoslari, birinchi tibbiy yordam — barchasi O'zbekiston DTM/IIV imtihon namunasiga mos bo'lsin."
+        : "";
+
     const sysPrompt = isLevelTest
       ? `Siz O'zbekiston ta'lim tizimi uchun PROFESSIONAL test tuzuvchisiz va "${subject}" fanining mutaxassisisiz.
 
