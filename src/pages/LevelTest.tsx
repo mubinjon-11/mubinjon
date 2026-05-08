@@ -43,6 +43,8 @@ export default function LevelTest() {
     if (!bestPerSubject.has(r.subject)) bestPerSubject.set(r.subject, r);
   });
 
+  const isGuest = Boolean((user?.user_metadata as any)?.is_guest);
+
   const handleStart = async () => {
     if (!subject) {
       toast.error("Fanni tanlang");
@@ -70,8 +72,6 @@ export default function LevelTest() {
       setLoading(false);
     }
   };
-
-  const isGuest = Boolean((user?.user_metadata as any)?.is_guest);
 
   return (
     <div className="min-h-screen bg-background">
