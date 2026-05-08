@@ -22,6 +22,8 @@ const ICONS: Record<string, string> = {
   "Ona tili": "📖",
   "Adabiyot": "📚",
   "Informatika": "💻",
+  "Tibbiyot": "🩺",
+  "Guvohnoma": "🚗",
 };
 
 const IMAGE_ICONS: Record<string, string> = {
