@@ -11,6 +11,7 @@ const LANGUAGE_SUBJECTS = ["Ingliz tili", "English Listening", "Rus tili", "Kore
 const LISTENING_SUBJECT = "English Listening";
 
 const CEFR = ["A1", "A2", "B1", "B2", "C1", "C2"];
+const IELTS = ["4.5", "5.5", "6.0", "6.5", "7.0", "8.0"];
 const NAT = ["C", "C+", "B", "B+", "A", "A+"];
 
 Deno.serve(async (req) => {
@@ -25,7 +26,8 @@ Deno.serve(async (req) => {
     }
 
     const isLanguage = LANGUAGE_SUBJECTS.includes(subject);
-    const validLevels = isLanguage ? CEFR : NAT;
+    const isListening = subject === LISTENING_SUBJECT;
+    const validLevels = isListening ? IELTS : isLanguage ? CEFR : NAT;
     if (!validLevels.includes(level)) {
       return new Response(JSON.stringify({ error: "Bu fan uchun noto'g'ri daraja" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
