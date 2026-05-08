@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.guest-signup]
 verify_jwt = false
+
+[functions.guest-cleanup]
+verify_jwt = false
