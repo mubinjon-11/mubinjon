@@ -26,6 +26,13 @@ Deno.serve(async (req) => {
     const langDistribution = "A1: 2 ta, A2: 3 ta, B1: 4 ta, B2: 4 ta, C1: 4 ta, C2: 3 ta";
     const subjDistribution = "C (boshlang'ich, juda oson — 5-6 sinf): 2 ta, C+ (oson — 7-8 sinf): 3 ta, B (o'rta — 9-sinf bazaviy): 4 ta, B+ (o'rta+, DTM bazasi — 10-sinf): 4 ta, A (qiyin, DTM yuqori — 11-sinf): 4 ta, A+ (juda qiyin, olimpiada/universitet kirish darajasi): 3 ta";
 
+    const subjectContext =
+      subject === "Tibbiyot"
+        ? "\n\nKONTEKST: \"Tibbiyot\" fani — hamshiralik ishi va doktorlik amaliyoti bo'yicha. Savollar bemorni davolash, dori-darmon dozalari, birinchi tibbiy yordam, anatomiya/fiziologiya, asepsis-antisepsis, in'ektsiya texnikasi, EKG asoslari, klinik holatlar va hamshira/shifokor amaliyotidagi haqiqiy vaziyatlar bo'yicha bo'lsin."
+        : subject === "Guvohnoma"
+        ? "\n\nKONTEKST: \"Guvohnoma\" fani — O'zbekiston haydovchilik guvohnomasini olishga tayyorgarlik. Savollar yo'l harakati qoidalari (YHQ), yo'l belgilari va chiziqlari, chorrahalardan o'tish, ustuvorlik, jarima va javobgarlik, avtomobil tuzilishi asoslari, birinchi tibbiy yordam — barchasi O'zbekiston DTM/IIV imtihon namunasiga mos bo'lsin."
+        : "";
+
     const sysPrompt = isLevelTest
       ? `Siz O'zbekiston ta'lim tizimi uchun PROFESSIONAL test tuzuvchisiz va "${subject}" fanining mutaxassisisiz.
 
@@ -49,7 +56,13 @@ Savollarni difficulty bo'yicha o'sish tartibida bering (oson → qiyin).`
       : `Siz professional o'qituvchisiz. ${grade ? grade + "-sinf" : ""} o'quvchilari uchun "${subject}" fanidan "${topic}" mavzusida aynan ${qCount} ta test savol yarating. Har bir savolda 4 ta variant va bitta to'g'ri javob bo'lsin. Barchasi O'ZBEK tilida bo'lsin (agar fan til bo'lsa, savollar shu tilda bo'lishi mumkin). Savollar takrorlanmasin.`;
 
     const listeningInstruction = isListening
-      ? `\n\nMUHIM (English Listening): Har bir savol AUDIO TINGLASH asosida bo'lsin. Savol matnida tinglash kerak bo'lgan inglizcha so'z yoki qisqa jumla "[LISTEN: matn]" formatida bo'lsin. Masalan: "Quyidagini tinglang va to'g'ri javobni tanlang: [LISTEN: through the woods]". 4 ta variant FONETIK BIR-BIRIGA O'XSHASH inglizcha so'zlar/jumlalar bo'lsin (minimal pairs, homophones, similar sounds). Misol: through / though / thought / thorough; ship / sheep / cheap / chip; write / right / rite / wright. To'g'ri javob — eshitilgan matn.`
+      ? `\n\nMUHIM (English Listening — IELTS):
+- Daraja IELTS Listening band shkalasi (4.5, 5.5, 6.0, 6.5, 7.0, 8.0) bo'yicha baholanadi.
+- Har bir savol FAQAT AUDIO TINGLASH asosida bo'lsin.
+- "question" maydoni AYNAN shu formatda bo'lsin: "[LISTEN: <inglizcha so'z yoki qisqa jumla>]" — boshqa hech qanday so'z, ko'rsatma yoki tarjima bo'lmasin (foydalanuvchi yozma matn ko'rmasligi kerak, faqat audio eshitadi).
+- 4 ta variant FONETIK BIR-BIRIGA O'XSHASH inglizcha so'zlar/jumlalar bo'lsin (minimal pairs, homophones, yaqin tovushlar). Misollar: through / though / thought / thorough; ship / sheep / cheap / chip; write / right / rite / wright; their / there / they're / there's.
+- To'g'ri javob — [LISTEN: ...] ichidagi matn bilan AYNAN bir xil bo'lgan variant.
+- Bandlarni quyidagicha taqsimlang: 4.5: 2 ta, 5.5: 3 ta, 6.0: 4 ta, 6.5: 4 ta, 7.0: 4 ta, 8.0: 3 ta. Yuqori bandlarda jumlalar uzunroq va tezroq talaffuzga mos murakkabroq bo'lsin.`
       : "";
 
     const questionItemProps: any = {
@@ -59,7 +72,9 @@ Savollarni difficulty bo'yicha o'sish tartibida bering (oson → qiyin).`
     };
     const requiredFields = ["question", "options", "correct_index"];
     if (isLevelTest) {
-      questionItemProps.difficulty = isLanguage
+      questionItemProps.difficulty = isListening
+        ? { type: "string", enum: ["4.5", "5.5", "6.0", "6.5", "7.0", "8.0"] }
+        : isLanguage
         ? { type: "string", enum: ["A1", "A2", "B1", "B2", "C1", "C2"] }
         : { type: "string", enum: ["C", "C+", "B", "B+", "A", "A+"] };
       requiredFields.push("difficulty");
@@ -98,7 +113,7 @@ Savollarni difficulty bo'yicha o'sish tartibida bering (oson → qiyin).`
       body: JSON.stringify({
         model: isLevelTest ? "google/gemini-2.5-pro" : "google/gemini-3-flash-preview",
         messages: [
-          { role: "system", content: sysPrompt + listeningInstruction },
+          { role: "system", content: sysPrompt + subjectContext + listeningInstruction },
           { role: "user", content: `Iltimos, aynan ${qCount} ta savol yarating va save_questions tool orqali qaytaring.${isLevelTest ? " Qiyinlik taqsimotiga QAT'IY rioya qiling va har bir savolga difficulty belgilang." : ""}${isListening ? " Har bir savolga [LISTEN: ...] bloki kiriting va variantlarni fonetik o'xshash so'zlardan tuzing." : ""}` },
         ],
         tools,

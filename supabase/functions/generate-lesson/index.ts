@@ -11,6 +11,7 @@ const LANGUAGE_SUBJECTS = ["Ingliz tili", "English Listening", "Rus tili", "Kore
 const LISTENING_SUBJECT = "English Listening";
 
 const CEFR = ["A1", "A2", "B1", "B2", "C1", "C2"];
+const IELTS = ["4.5", "5.5", "6.0", "6.5", "7.0", "8.0"];
 const NAT = ["C", "C+", "B", "B+", "A", "A+"];
 
 Deno.serve(async (req) => {
@@ -25,7 +26,8 @@ Deno.serve(async (req) => {
     }
 
     const isLanguage = LANGUAGE_SUBJECTS.includes(subject);
-    const validLevels = isLanguage ? CEFR : NAT;
+    const isListening = subject === LISTENING_SUBJECT;
+    const validLevels = isListening ? IELTS : isLanguage ? CEFR : NAT;
     if (!validLevels.includes(level)) {
       return new Response(JSON.stringify({ error: "Bu fan uchun noto'g'ri daraja" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -53,16 +55,27 @@ Deno.serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
-    const standardNote = isLanguage
+    const standardNote = isListening
+      ? `Daraja IELTS Listening band (${level}) ga to'liq mos bo'lsin.`
+      : isLanguage
       ? `Daraja CEFR (${level}) xalqaro standartiga to'liq mos bo'lsin.`
       : `Daraja O'zbekiston Milliy sertifikat / DTM standartining "${level}" darajasiga mos bo'lsin.`;
 
-    const isListening = subject === LISTENING_SUBJECT;
+    const subjectContext =
+      subject === "Tibbiyot"
+        ? `\nKONTEKST: "Tibbiyot" — hamshiralik ishi va doktorlik amaliyoti. Mavzular: anatomiya/fiziologiya, asepsis-antisepsis, in'ektsiya texnikasi, dori dozalari, birinchi tibbiy yordam, EKG, klinik holatlar, hamshira/shifokor amaliyoti.`
+        : subject === "Guvohnoma"
+        ? `\nKONTEKST: "Guvohnoma" — O'zbekiston haydovchilik guvohnomasi imtihoniga tayyorgarlik. Mavzular: YHQ, yo'l belgilari va chiziqlari, ustuvorlik, chorrahalar, jarima/javobgarlik, avtomobil tuzilishi asoslari, yo'lda birinchi yordam.`
+        : "";
+
     const listeningNote = isListening
-      ? `\nMUHIM (Listening): Bu tinglab tushunish darsi. "content" ichida o'quvchiga **English** tilida 4-8 ta qisqa jumla/audio matn (transcript) bering — ular speech-synthesis orqali ovozli o'qiladi. Mavzuga oid grammatik tushuntirish va lug'atni o'zbekcha bering. Har bir savol AUDIO ASOSIDA bo'lsin: savol matnida tinglash kerak bo'lgan inglizcha so'z/jumla "[LISTEN: matn]" formatida yozilsin (masalan: "Quyidagi so'zni tinglang: [LISTEN: through]"). 4 ta variant FONETIK JIHATDAN BIR-BIRIGA O'XSHASH inglizcha so'zlar bo'lsin (masalan: through / though / thought / thorough). To'g'ri javob — eshitilgan so'z.`
+      ? `\nMUHIM (English Listening — IELTS ${level}):
+- "content" ichida shu bandga mos qiyinlikdagi 4-8 ta inglizcha qisqa jumla/audio transcript bering (speech-synthesis bilan o'qiladi). Grammatik tushuntirish va lug'at o'zbekcha.
+- Har bir savolning "question" maydoni AYNAN "[LISTEN: <inglizcha so'z/jumla>]" formatida bo'lsin va boshqa hech qanday yozma matn (na o'zbekcha, na inglizcha) bo'lmasin — foydalanuvchi faqat audio eshitishi kerak.
+- 4 ta variant fonetik jihatdan bir-biriga o'xshash inglizcha so'zlar bo'lsin (minimal pairs/homophones). To'g'ri javob — [LISTEN: ...] ichidagi matn bilan aynan bir xil variant.`
       : "";
 
-    const sysPrompt = `Siz "${subject}" fanidan PROFESSIONAL o'qituvchisiz. ${standardNote}
+    const sysPrompt = `Siz "${subject}" fanidan PROFESSIONAL o'qituvchisiz. ${standardNote}${subjectContext}
 
 VAZIFA: ${level} darajasi uchun ${position}-tartibli DARS yarating.
 - Dars mavzusi shu darajada o'qitilishi kerak bo'lgan keyingi mantiqiy mavzu bo'lsin (${position} - tartib raqami).

@@ -17,6 +17,8 @@ export const SUBJECTS = [
   "Informatika",
   "Python dasturlash",
   "C++ dasturlash",
+  "Tibbiyot",
+  "Guvohnoma",
 ] as const;
 
 export const LANGUAGE_SUBJECTS = [
@@ -34,17 +36,28 @@ export const LEARNING_SUBJECTS = SUBJECTS;
 
 export const NATIONAL_LEVELS = ["C", "C+", "B", "B+", "A", "A+"] as const;
 export const CEFR_LEVELS = ["A1", "A2", "B1", "B2", "C1", "C2"] as const;
+/** IELTS bands used for English Listening */
+export const IELTS_LEVELS = ["4.5", "5.5", "6.0", "6.5", "7.0", "8.0"] as const;
 
 export const GRADES = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"];
 
 export type Subject = typeof SUBJECTS[number];
 
 export function getLevelsForSubject(subject: string): readonly string[] {
+  if (subject === LISTENING_SUBJECT) return IELTS_LEVELS;
   return LANGUAGE_SUBJECTS.includes(subject) ? CEFR_LEVELS : NATIONAL_LEVELS;
 }
 
-/** Simple percentage-based level (CEFR for languages, national cert for others) */
+/** Simple percentage-based level (CEFR for languages, IELTS for listening, national for others) */
 export function calculateLevel(percentage: number, subject: string): string {
+  if (subject === LISTENING_SUBJECT) {
+    if (percentage >= 95) return "8.0";
+    if (percentage >= 85) return "7.0";
+    if (percentage >= 70) return "6.5";
+    if (percentage >= 55) return "6.0";
+    if (percentage >= 35) return "5.5";
+    return "4.5";
+  }
   const isLanguage = LANGUAGE_SUBJECTS.includes(subject);
   if (isLanguage) {
     if (percentage >= 95) return "C2";
@@ -64,7 +77,6 @@ export function calculateLevel(percentage: number, subject: string): string {
 
 /**
  * Weighted level calculation for AI-generated level tests.
- * Difficulty: CEFR (languages) or national cert tiers (C..A+).
  * Level = highest tier with ≥60% correct, provided all easier tiers ≥50%.
  */
 export function calculateLevelWeighted(
@@ -73,10 +85,12 @@ export function calculateLevelWeighted(
   correctIndices: number[],
   subject: string,
 ): string {
-  const isLanguage = LANGUAGE_SUBJECTS.includes(subject);
-  const tiers = isLanguage
-    ? ["A1", "A2", "B1", "B2", "C1", "C2"]
-    : ["C", "C+", "B", "B+", "A", "A+"];
+  const tiers: string[] =
+    subject === LISTENING_SUBJECT
+      ? [...IELTS_LEVELS]
+      : LANGUAGE_SUBJECTS.includes(subject)
+      ? [...CEFR_LEVELS]
+      : [...NATIONAL_LEVELS];
 
   const stats: Record<string, { correct: number; total: number }> = {};
   tiers.forEach((t) => (stats[t] = { correct: 0, total: 0 }));
@@ -112,9 +126,9 @@ export function calculateLevelWeighted(
 }
 
 export function levelColor(level: string): string {
-  if (["C2", "C1", "A+", "A"].includes(level)) return "bg-success text-success-foreground";
-  if (["B2", "B1", "B+", "B"].includes(level)) return "bg-primary text-primary-foreground";
-  if (["A2", "C+"].includes(level)) return "bg-warning text-warning-foreground";
-  if (["A1", "C"].includes(level)) return "bg-muted text-muted-foreground";
+  if (["C2", "C1", "A+", "A", "8.0", "7.5", "7.0"].includes(level)) return "bg-success text-success-foreground";
+  if (["B2", "B1", "B+", "B", "6.5", "6.0"].includes(level)) return "bg-primary text-primary-foreground";
+  if (["A2", "C+", "5.5"].includes(level)) return "bg-warning text-warning-foreground";
+  if (["A1", "C", "4.5"].includes(level)) return "bg-muted text-muted-foreground";
   return "bg-muted text-muted-foreground";
 }
