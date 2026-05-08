@@ -131,9 +131,13 @@ export default function TestRunner() {
         </div>
 
         <div className="rounded-2xl border border-border bg-card p-6 md:p-8 shadow-soft mb-6">
-          <h2 className="text-lg md:text-xl font-semibold mb-6 leading-relaxed">
-            {current + 1}. <ListenText text={q.question} />
-          </h2>
+          {subject === "English Listening" ? (
+            <ListeningPrompt index={current} text={q.question} />
+          ) : (
+            <h2 className="text-lg md:text-xl font-semibold mb-6 leading-relaxed">
+              {current + 1}. <ListenText text={q.question} />
+            </h2>
+          )}
           <div className="space-y-3">
             {q.options.map((opt, idx) => {
               const isSel = selected === idx;
@@ -221,6 +225,53 @@ export default function TestRunner() {
           </p>
         )}
       </main>
+    </div>
+  );
+}
+
+/**
+ * Listening question prompt: extracts the [LISTEN: ...] phrase from the question text,
+ * hides any written words, and auto-plays the audio when the question changes.
+ */
+function ListeningPrompt({ index, text }: { index: number; text: string }) {
+  const m = text.match(/\[LISTEN:\s*([^\]]+)\]/);
+  const phrase = (m?.[1] ?? text).trim();
+
+  useEffect(() => {
+    if (!("speechSynthesis" in window) || !phrase) return;
+    const u = new SpeechSynthesisUtterance(phrase);
+    u.lang = "en-US";
+    u.rate = 0.9;
+    window.speechSynthesis.cancel();
+    const t = setTimeout(() => window.speechSynthesis.speak(u), 250);
+    return () => {
+      clearTimeout(t);
+      window.speechSynthesis.cancel();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [index, phrase]);
+
+  const replay = () => {
+    if (!("speechSynthesis" in window)) return;
+    const u = new SpeechSynthesisUtterance(phrase);
+    u.lang = "en-US";
+    u.rate = 0.9;
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(u);
+  };
+
+  return (
+    <div className="mb-6">
+      <div className="text-sm text-muted-foreground mb-3">
+        {index + 1}. Audioni tinglang va to'g'ri javobni tanlang
+      </div>
+      <button
+        type="button"
+        onClick={replay}
+        className="w-full flex items-center justify-center gap-3 rounded-2xl gradient-primary text-primary-foreground py-6 text-lg font-semibold shadow-soft hover:opacity-90 transition-base"
+      >
+        <Volume2 className="h-6 w-6" /> Audioni qayta eshitish
+      </button>
     </div>
   );
 }
