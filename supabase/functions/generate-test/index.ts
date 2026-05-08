@@ -65,7 +65,9 @@ Savollarni difficulty bo'yicha o'sish tartibida bering (oson → qiyin).`
     };
     const requiredFields = ["question", "options", "correct_index"];
     if (isLevelTest) {
-      questionItemProps.difficulty = isLanguage
+      questionItemProps.difficulty = isListening
+        ? { type: "string", enum: ["4.5", "5.5", "6.0", "6.5", "7.0", "8.0"] }
+        : isLanguage
         ? { type: "string", enum: ["A1", "A2", "B1", "B2", "C1", "C2"] }
         : { type: "string", enum: ["C", "C+", "B", "B+", "A", "A+"] };
       requiredFields.push("difficulty");
