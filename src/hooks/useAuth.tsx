@@ -50,6 +50,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return false;
   };
 
+  const checkGuestExpiryAndSignOut = async (u: User): Promise<boolean> => {
+    if (!(u.user_metadata as any)?.is_guest) return false;
+    try {
+      const { data } = await supabase.functions.invoke("guest-cleanup");
+      if ((data as any)?.deleted) {
+        await supabase.auth.signOut();
+        setRole(null); setUser(null); setSession(null);
+        const { toast } = await import("sonner");
+        toast.error("Mehmon akkauntingiz muddati tugadi (6 kun) va o'chirildi.");
+        return true;
+      }
+    } catch (_) { /* ignore */ }
+    return false;
+  };
+
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
       setSession(s);
@@ -57,7 +72,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (s?.user) {
         setTimeout(async () => {
           const blocked = await checkBlockedAndSignOut(s.user.id);
-          if (!blocked) fetchRole(s.user.id);
+          if (blocked) return;
+          const expired = await checkGuestExpiryAndSignOut(s.user);
+          if (!expired) fetchRole(s.user.id);
         }, 0);
       } else {
         setRole(null);
@@ -69,7 +86,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(s?.user ?? null);
       if (s?.user) {
         const blocked = await checkBlockedAndSignOut(s.user.id);
-        if (!blocked) await fetchRole(s.user.id);
+        if (!blocked) {
+          const expired = await checkGuestExpiryAndSignOut(s.user);
+          if (!expired) await fetchRole(s.user.id);
+        }
       }
       setLoading(false);
     });
