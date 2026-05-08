@@ -49,7 +49,13 @@ Savollarni difficulty bo'yicha o'sish tartibida bering (oson → qiyin).`
       : `Siz professional o'qituvchisiz. ${grade ? grade + "-sinf" : ""} o'quvchilari uchun "${subject}" fanidan "${topic}" mavzusida aynan ${qCount} ta test savol yarating. Har bir savolda 4 ta variant va bitta to'g'ri javob bo'lsin. Barchasi O'ZBEK tilida bo'lsin (agar fan til bo'lsa, savollar shu tilda bo'lishi mumkin). Savollar takrorlanmasin.`;
 
     const listeningInstruction = isListening
-      ? `\n\nMUHIM (English Listening): Har bir savol AUDIO TINGLASH asosida bo'lsin. Savol matnida tinglash kerak bo'lgan inglizcha so'z yoki qisqa jumla "[LISTEN: matn]" formatida bo'lsin. Masalan: "Quyidagini tinglang va to'g'ri javobni tanlang: [LISTEN: through the woods]". 4 ta variant FONETIK BIR-BIRIGA O'XSHASH inglizcha so'zlar/jumlalar bo'lsin (minimal pairs, homophones, similar sounds). Misol: through / though / thought / thorough; ship / sheep / cheap / chip; write / right / rite / wright. To'g'ri javob — eshitilgan matn.`
+      ? `\n\nMUHIM (English Listening — IELTS):
+- Daraja IELTS Listening band shkalasi (4.5, 5.5, 6.0, 6.5, 7.0, 8.0) bo'yicha baholanadi.
+- Har bir savol FAQAT AUDIO TINGLASH asosida bo'lsin.
+- "question" maydoni AYNAN shu formatda bo'lsin: "[LISTEN: <inglizcha so'z yoki qisqa jumla>]" — boshqa hech qanday so'z, ko'rsatma yoki tarjima bo'lmasin (foydalanuvchi yozma matn ko'rmasligi kerak, faqat audio eshitadi).
+- 4 ta variant FONETIK BIR-BIRIGA O'XSHASH inglizcha so'zlar/jumlalar bo'lsin (minimal pairs, homophones, yaqin tovushlar). Misollar: through / though / thought / thorough; ship / sheep / cheap / chip; write / right / rite / wright; their / there / they're / there's.
+- To'g'ri javob — [LISTEN: ...] ichidagi matn bilan AYNAN bir xil bo'lgan variant.
+- Bandlarni quyidagicha taqsimlang: 4.5: 2 ta, 5.5: 3 ta, 6.0: 4 ta, 6.5: 4 ta, 7.0: 4 ta, 8.0: 3 ta. Yuqori bandlarda jumlalar uzunroq va tezroq talaffuzga mos murakkabroq bo'lsin.`
       : "";
 
     const questionItemProps: any = {
