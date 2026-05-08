@@ -10,6 +10,7 @@ Deno.serve(async (req) => {
   try {
     const { subject, topic, grade, count, mode } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
     const isDriving = subject === "Guvohnoma";
 
     const isLevelTest = mode === "daraja";
