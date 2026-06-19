@@ -96,8 +96,8 @@ export default function TestRunner() {
       percentage,
       level,
       test_id: testId ?? null,
-      answers: answersArr,
-      questions_snapshot: questions,
+      answers: answersArr as any,
+      questions_snapshot: questions as any,
     });
     if (error) {
       toast.error("Natijani saqlashda xatolik");
