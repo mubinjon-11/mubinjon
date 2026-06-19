@@ -85,6 +85,7 @@ export default function TestRunner() {
           )
         : calculateLevel(percentage, subject);
 
+    const answersArr = questions.map((_, i) => (answers[i] ?? -1));
     const { error } = await supabase.from("results").insert({
       user_id: user.id,
       subject,
@@ -95,6 +96,8 @@ export default function TestRunner() {
       percentage,
       level,
       test_id: testId ?? null,
+      answers: answersArr,
+      questions_snapshot: questions,
     });
     if (error) {
       toast.error("Natijani saqlashda xatolik");
