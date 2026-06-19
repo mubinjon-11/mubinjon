@@ -156,11 +156,13 @@ export type Database = {
       }
       results: {
         Row: {
+          answers: Json | null
           created_at: string
           id: string
           level: string | null
           mode: string
           percentage: number
+          questions_snapshot: Json | null
           score: number
           subject: string
           test_id: string | null
@@ -169,11 +171,13 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          answers?: Json | null
           created_at?: string
           id?: string
           level?: string | null
           mode?: string
           percentage: number
+          questions_snapshot?: Json | null
           score: number
           subject: string
           test_id?: string | null
@@ -182,11 +186,13 @@ export type Database = {
           user_id: string
         }
         Update: {
+          answers?: Json | null
           created_at?: string
           id?: string
           level?: string | null
           mode?: string
           percentage?: number
+          questions_snapshot?: Json | null
           score?: number
           subject?: string
           test_id?: string | null
