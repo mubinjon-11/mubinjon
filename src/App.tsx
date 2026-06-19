@@ -19,6 +19,8 @@ import Learn from "./pages/Learn";
 import LearnSubject from "./pages/LearnSubject";
 import LearnLevel from "./pages/LearnLevel";
 import LearnLesson from "./pages/LearnLesson";
+import SolvedTests from "./pages/SolvedTests";
+import SolvedTestDetail from "./pages/SolvedTestDetail";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -54,6 +56,10 @@ const App = () => (
             <Route path="/organish/:subject" element={<ProtectedRoute role={["oquvchi", "oqituvchi", "admin"]}><LearnSubject /></ProtectedRoute>} />
             <Route path="/organish/:subject/:level" element={<ProtectedRoute role={["oquvchi", "oqituvchi", "admin"]}><LearnLevel /></ProtectedRoute>} />
             <Route path="/organish/:subject/:level/:position" element={<ProtectedRoute role={["oquvchi", "oqituvchi", "admin"]}><LearnLesson /></ProtectedRoute>} />
+
+            {/* Solved tests — available to all authenticated roles */}
+            <Route path="/yechilgan" element={<ProtectedRoute role={["oquvchi", "oqituvchi", "admin"]}><SolvedTests /></ProtectedRoute>} />
+            <Route path="/yechilgan/:resultId" element={<ProtectedRoute role={["oquvchi", "oqituvchi", "admin"]}><SolvedTestDetail /></ProtectedRoute>} />
 
             <Route path="*" element={<NotFound />} />
           </Routes>

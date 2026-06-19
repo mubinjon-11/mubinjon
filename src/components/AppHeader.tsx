@@ -17,6 +17,7 @@ export function AppHeader() {
         { to: "/test/yaratish", label: "Oddiy test yaratish" },
         { to: "/test/daraja", label: "Darajani aniqlash" },
         { to: "/organish", label: "O'rganish" },
+        { to: "/yechilgan", label: "Yechilgan testlar" },
         { to: "/oqituvchi/yangi", label: "Test tuzish" },
         { to: "/admin", label: "Saytni kuzatish" },
       ]
@@ -25,12 +26,14 @@ export function AppHeader() {
         { to: "/test/yaratish", label: "Oddiy test yaratish" },
         { to: "/test/daraja", label: "Darajani aniqlash" },
         { to: "/organish", label: "O'rganish" },
+        { to: "/yechilgan", label: "Yechilgan testlar" },
       ]
     : isTeacher
     ? [
         { to: "/oqituvchi", label: "Mening testlarim" },
         { to: "/oqituvchi/yangi", label: "Yangi test" },
         { to: "/organish", label: "O'rganish" },
+        { to: "/yechilgan", label: "Yechilgan testlar" },
       ]
     : [];
 
