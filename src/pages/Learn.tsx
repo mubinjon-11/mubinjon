@@ -5,13 +5,16 @@ import { BookOpen } from "lucide-react";
 import iconPython from "@/assets/icon-python.png";
 import iconCpp from "@/assets/icon-cpp.png";
 
+const FLAG_URLS: Record<string, string> = {
+  "Ingliz tili": "https://flagcdn.com/w80/gb.png",
+  "English Listening": "https://flagcdn.com/w80/us.png",
+  "Rus tili": "https://flagcdn.com/w80/ru.png",
+  "Koreys tili": "https://flagcdn.com/w80/kr.png",
+  "Xitoy tili": "https://flagcdn.com/w80/cn.png",
+  "Arab tili": "https://flagcdn.com/w80/sa.png",
+};
+
 const ICONS: Record<string, string> = {
-  "Ingliz tili": "🇬🇧",
-  "English Listening": "🎧",
-  "Rus tili": "🇷🇺",
-  "Koreys tili": "🇰🇷",
-  "Xitoy tili": "🇨🇳",
-  "Arab tili": "🇸🇦",
   "Matematika": "📐",
   "Fizika": "⚛️",
   "Kimyo": "🧪",
