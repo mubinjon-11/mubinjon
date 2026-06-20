@@ -57,6 +57,8 @@ export default function Learn() {
               <div className="mb-3 h-12 flex items-center">
                 {IMAGE_ICONS[s] ? (
                   <img src={IMAGE_ICONS[s]} alt={s} loading="lazy" width={48} height={48} className="h-12 w-12 object-contain" />
+                ) : FLAG_URLS[s] ? (
+                  <img src={FLAG_URLS[s]} alt={`${s} bayrog'i`} loading="lazy" width={56} height={36} className="h-9 w-auto rounded-sm shadow-sm" />
                 ) : (
                   <div className="text-4xl">{ICONS[s] ?? "📘"}</div>
                 )}
