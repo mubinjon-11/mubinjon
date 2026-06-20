@@ -84,18 +84,8 @@ export default function CreateTest() {
 
         <div className="rounded-2xl border border-border bg-card p-6 shadow-soft space-y-5">
           <div className="space-y-2">
-            <Label>Sinf</Label>
-            <Select value={grade} onValueChange={setGrade}>
-              <SelectTrigger><SelectValue placeholder="Sinfni tanlang" /></SelectTrigger>
-              <SelectContent>
-                {GRADES.map((g) => <SelectItem key={g} value={g}>{g}-sinf</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
             <Label>Fan</Label>
-            <Select value={subject} onValueChange={setSubject}>
+            <Select value={subject} onValueChange={(v) => { setSubject(v); setLevel(""); }}>
               <SelectTrigger><SelectValue placeholder="Fanni tanlang" /></SelectTrigger>
               <SelectContent>
                 {SUBJECTS.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
@@ -104,9 +94,20 @@ export default function CreateTest() {
           </div>
 
           <div className="space-y-2">
-            <Label>Mavzu</Label>
-            <Input value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="Masalan: Algebraik ifodalar" maxLength={200} />
+            <Label>Daraja</Label>
+            <Select value={level} onValueChange={setLevel} disabled={!subject}>
+              <SelectTrigger><SelectValue placeholder={subject ? "Darajani tanlang" : "Avval fanni tanlang"} /></SelectTrigger>
+              <SelectContent>
+                {levels.map((l) => <SelectItem key={l} value={l}>{l}</SelectItem>)}
+              </SelectContent>
+            </Select>
           </div>
+
+          <div className="space-y-2">
+            <Label>Mavzu <span className="text-muted-foreground font-normal">(majburiy emas)</span></Label>
+            <Input value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="Masalan: Algebraik ifodalar (bo'sh qoldirsangiz fan bo'yicha umumiy savollar tuziladi)" maxLength={200} />
+          </div>
+
 
           <div className="space-y-2">
             <Label>Savollar soni</Label>
