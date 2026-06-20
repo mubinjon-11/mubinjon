@@ -14,7 +14,7 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { subject, topic, grade, count, mode } = await req.json();
+    const { subject, topic, grade, level, count, mode } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
     const isDriving = subject === "Guvohnoma";
@@ -60,7 +60,7 @@ HAR BIR SAVOL UCHUN difficulty maydoni bo'lishi SHART:
 ${isLanguage ? '"A1", "A2", "B1", "B2", "C1", "C2" dan biri.' : '"C", "C+", "B", "B+", "A", "A+" dan biri.'}
 
 Savollarni difficulty bo'yicha o'sish tartibida bering (oson → qiyin).`
-      : `Siz professional o'qituvchisiz. ${grade ? grade + "-sinf" : ""} o'quvchilari uchun "${subject}" fanidan "${topic}" mavzusida aynan ${qCount} ta test savol yarating. Har bir savolda 4 ta variant va bitta to'g'ri javob bo'lsin. Barchasi O'ZBEK tilida bo'lsin (agar fan til bo'lsa, savollar shu tilda bo'lishi mumkin). Savollar takrorlanmasin.`;
+      : `Siz professional o'qituvchisiz va "${subject}" fani mutaxassisisiz. ${level ? `"${level}" darajadagi` : ""} o'quvchilar uchun "${subject}" fanidan ${topic && String(topic).trim() ? `"${topic}" mavzusida` : "umumiy (fanning turli mavzularini qamrab oluvchi)"} aynan ${qCount} ta test savol yarating. Har bir savolda 4 ta variant va bitta to'g'ri javob bo'lsin. ${level ? `Savollar qiyinligi "${level}" darajaga to'liq mos kelsin — yengil-yelpi yoki haddan tashqari qiyin bo'lmasin.` : ""} Barchasi O'ZBEK tilida bo'lsin (agar fan til bo'lsa, savollar shu tilda bo'lishi mumkin). Savollar takrorlanmasin.`;
 
     const listeningInstruction = isListening
       ? `\n\nMUHIM (English Listening — IELTS):

@@ -6,21 +6,23 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { SUBJECTS, GRADES } from "@/lib/constants";
+import { SUBJECTS, getLevelsForSubject } from "@/lib/constants";
 import { toast } from "sonner";
 import { Loader2, Sparkles, BookOpen } from "lucide-react";
 
 export default function CreateTest() {
   const navigate = useNavigate();
-  const [grade, setGrade] = useState("");
   const [subject, setSubject] = useState("");
+  const [level, setLevel] = useState("");
   const [topic, setTopic] = useState("");
   const [count, setCount] = useState("10");
   const [loading, setLoading] = useState(false);
 
+  const levels = subject ? getLevelsForSubject(subject) : [];
+
   const handleStart = async () => {
-    if (!subject || !topic || !grade) {
-      toast.error("Barcha maydonlarni to'ldiring");
+    if (!subject || !level) {
+      toast.error("Fan va darajani tanlang");
       return;
     }
     const n = parseInt(count, 10);
@@ -28,35 +30,38 @@ export default function CreateTest() {
       toast.error("Savollar soni 3 dan 30 gacha bo'lishi kerak");
       return;
     }
+    const topicTrimmed = topic.trim();
     setLoading(true);
     try {
-      // 1) Look for teacher tests matching subject+topic (case-insensitive)
-      const { data: teacherTests } = await supabase
-        .from("tests")
-        .select("id, title, question_count")
-        .ilike("subject", subject)
-        .ilike("topic", topic)
-        .gt("question_count", 0)
-        .limit(1);
+      // 1) Look for teacher tests matching subject+topic (only if topic provided)
+      if (topicTrimmed) {
+        const { data: teacherTests } = await supabase
+          .from("tests")
+          .select("id, title, question_count")
+          .ilike("subject", subject)
+          .ilike("topic", topicTrimmed)
+          .gt("question_count", 0)
+          .limit(1);
 
-      if (teacherTests && teacherTests.length > 0) {
-        toast.success("O'qituvchi testi topildi!");
-        navigate(`/test/${teacherTests[0].id}/run`, {
-          state: { mode: "oddiy", subject, topic },
-        });
-        return;
+        if (teacherTests && teacherTests.length > 0) {
+          toast.success("O'qituvchi testi topildi!");
+          navigate(`/test/${teacherTests[0].id}/run`, {
+            state: { mode: "oddiy", subject, topic: topicTrimmed },
+          });
+          return;
+        }
       }
 
       // 2) Generate via AI
       toast.message("AI test tayyorlamoqda...");
       const { data, error } = await supabase.functions.invoke("generate-test", {
-        body: { subject, topic, grade, count: n, mode: "oddiy" },
+        body: { subject, topic: topicTrimmed, level, count: n, mode: "oddiy" },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
 
       navigate("/test/ai/run", {
-        state: { questions: data.questions, mode: "oddiy", subject, topic, grade },
+        state: { questions: data.questions, mode: "oddiy", subject, topic: topicTrimmed, level },
       });
     } catch (e: any) {
       toast.error(e.message || "Xatolik yuz berdi");
@@ -79,18 +84,8 @@ export default function CreateTest() {
 
         <div className="rounded-2xl border border-border bg-card p-6 shadow-soft space-y-5">
           <div className="space-y-2">
-            <Label>Sinf</Label>
-            <Select value={grade} onValueChange={setGrade}>
-              <SelectTrigger><SelectValue placeholder="Sinfni tanlang" /></SelectTrigger>
-              <SelectContent>
-                {GRADES.map((g) => <SelectItem key={g} value={g}>{g}-sinf</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
             <Label>Fan</Label>
-            <Select value={subject} onValueChange={setSubject}>
+            <Select value={subject} onValueChange={(v) => { setSubject(v); setLevel(""); }}>
               <SelectTrigger><SelectValue placeholder="Fanni tanlang" /></SelectTrigger>
               <SelectContent>
                 {SUBJECTS.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
@@ -99,9 +94,20 @@ export default function CreateTest() {
           </div>
 
           <div className="space-y-2">
-            <Label>Mavzu</Label>
-            <Input value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="Masalan: Algebraik ifodalar" maxLength={200} />
+            <Label>Daraja</Label>
+            <Select value={level} onValueChange={setLevel} disabled={!subject}>
+              <SelectTrigger><SelectValue placeholder={subject ? "Darajani tanlang" : "Avval fanni tanlang"} /></SelectTrigger>
+              <SelectContent>
+                {levels.map((l) => <SelectItem key={l} value={l}>{l}</SelectItem>)}
+              </SelectContent>
+            </Select>
           </div>
+
+          <div className="space-y-2">
+            <Label>Mavzu <span className="text-muted-foreground font-normal">(majburiy emas)</span></Label>
+            <Input value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="Masalan: Algebraik ifodalar (bo'sh qoldirsangiz fan bo'yicha umumiy savollar tuziladi)" maxLength={200} />
+          </div>
+
 
           <div className="space-y-2">
             <Label>Savollar soni</Label>

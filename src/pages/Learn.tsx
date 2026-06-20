@@ -5,13 +5,16 @@ import { BookOpen } from "lucide-react";
 import iconPython from "@/assets/icon-python.png";
 import iconCpp from "@/assets/icon-cpp.png";
 
+const FLAG_URLS: Record<string, string> = {
+  "Ingliz tili": "https://flagcdn.com/w80/gb.png",
+  "English Listening": "https://flagcdn.com/w80/us.png",
+  "Rus tili": "https://flagcdn.com/w80/ru.png",
+  "Koreys tili": "https://flagcdn.com/w80/kr.png",
+  "Xitoy tili": "https://flagcdn.com/w80/cn.png",
+  "Arab tili": "https://flagcdn.com/w80/sa.png",
+};
+
 const ICONS: Record<string, string> = {
-  "Ingliz tili": "🇬🇧",
-  "English Listening": "🎧",
-  "Rus tili": "🇷🇺",
-  "Koreys tili": "🇰🇷",
-  "Xitoy tili": "🇨🇳",
-  "Arab tili": "🇸🇦",
   "Matematika": "📐",
   "Fizika": "⚛️",
   "Kimyo": "🧪",
@@ -54,6 +57,8 @@ export default function Learn() {
               <div className="mb-3 h-12 flex items-center">
                 {IMAGE_ICONS[s] ? (
                   <img src={IMAGE_ICONS[s]} alt={s} loading="lazy" width={48} height={48} className="h-12 w-12 object-contain" />
+                ) : FLAG_URLS[s] ? (
+                  <img src={FLAG_URLS[s]} alt={`${s} bayrog'i`} loading="lazy" width={56} height={36} className="h-9 w-auto rounded-sm shadow-sm" />
                 ) : (
                   <div className="text-4xl">{ICONS[s] ?? "📘"}</div>
                 )}
