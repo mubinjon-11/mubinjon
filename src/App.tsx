@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { BlockedOverlay } from "@/components/BlockedOverlay";
 import Landing from "./pages/Landing";
 import Auth from "./pages/Auth";
 import StudentDashboard from "./pages/StudentDashboard";
