@@ -714,6 +714,48 @@ export default function AdminDashboard() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Change role */}
+      <Dialog open={!!roleUser} onOpenChange={(o) => !o && setRoleUser(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <UserCog className="h-5 w-5" />
+              Rolni o'zgartirish
+            </DialogTitle>
+            <DialogDescription>
+              {roleUser?.full_name || roleUser?.email} uchun yangi rolni tanlang.
+              Hozirgi rol: <strong>{roleUser?.role ? ROLE_LABEL[roleUser.role] : "—"}</strong>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label>Yangi rol</Label>
+            <Select value={newRole} onValueChange={setNewRole}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="admin">Admin</SelectItem>
+                <SelectItem value="oqituvchi">O'qituvchi</SelectItem>
+                <SelectItem value="oquvchi">O'quvchi</SelectItem>
+              </SelectContent>
+            </Select>
+            {newRole === "admin" && (
+              <p className="text-xs text-destructive">
+                Diqqat: admin huquqi to'liq boshqaruvni beradi.
+              </p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRoleUser(null)}>Bekor</Button>
+            <Button onClick={handleSaveRole} disabled={savingRole || newRole === roleUser?.role}>
+              {savingRole && <Loader2 className="h-4 w-4 animate-spin" />}
+              Saqlash
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
+
