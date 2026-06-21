@@ -261,6 +261,43 @@ export default function AdminDashboard() {
     setLoadingQuestions(false);
   };
 
+  const openRoleDialog = (u: UserRow) => {
+    setRoleUser(u);
+    setNewRole(u.role ?? "oquvchi");
+  };
+
+  const handleSaveRole = async () => {
+    if (!roleUser) return;
+    setSavingRole(true);
+    await supabase.from("user_roles").delete().eq("user_id", roleUser.id);
+    const { error } = await supabase
+      .from("user_roles")
+      .insert({ user_id: roleUser.id, role: newRole as any });
+    setSavingRole(false);
+    if (error) return toast.error(error.message);
+    toast.success("Rol o'zgartirildi");
+    setRoleUser(null);
+    load();
+  };
+
+  const ROLE_LABEL: Record<string, string> = {
+    admin: "Admin",
+    oqituvchi: "O'qituvchi",
+    oquvchi: "O'quvchi",
+  };
+
+  // REPLACE_MARKER_OPENVIEW
+    setViewTest(t);
+    setLoadingQuestions(true);
+    const { data } = await supabase
+      .from("questions")
+      .select("id, question, options, correct_index, position")
+      .eq("test_id", t.id)
+      .order("position", { ascending: true });
+    setViewQuestions((data as any) ?? []);
+    setLoadingQuestions(false);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <AppHeader />
