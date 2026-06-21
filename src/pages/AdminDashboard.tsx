@@ -4,7 +4,14 @@ import { AppHeader } from "@/components/AppHeader";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Loader2, Users, Mail, Award, Trash2, Ban, Clock, ShieldCheck, FileText, Eye, MoreVertical } from "lucide-react";
+import { Loader2, Users, Mail, Award, Trash2, Ban, Clock, ShieldCheck, FileText, Eye, MoreVertical, UserCog } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -94,6 +101,9 @@ export default function AdminDashboard() {
   const [teacherTestsUser, setTeacherTestsUser] = useState<UserRow | null>(null);
   const [viewQuestions, setViewQuestions] = useState<QuestionRow[]>([]);
   const [loadingQuestions, setLoadingQuestions] = useState(false);
+  const [roleUser, setRoleUser] = useState<UserRow | null>(null);
+  const [newRole, setNewRole] = useState<string>("oquvchi");
+  const [savingRole, setSavingRole] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -251,6 +261,32 @@ export default function AdminDashboard() {
     setLoadingQuestions(false);
   };
 
+  const openRoleDialog = (u: UserRow) => {
+    setRoleUser(u);
+    setNewRole(u.role ?? "oquvchi");
+  };
+
+  const handleSaveRole = async () => {
+    if (!roleUser) return;
+    setSavingRole(true);
+    await supabase.from("user_roles").delete().eq("user_id", roleUser.id);
+    const { error } = await supabase
+      .from("user_roles")
+      .insert({ user_id: roleUser.id, role: newRole as any });
+    setSavingRole(false);
+    if (error) return toast.error(error.message);
+    toast.success("Rol o'zgartirildi");
+    setRoleUser(null);
+    load();
+  };
+
+  const ROLE_LABEL: Record<string, string> = {
+    admin: "Admin",
+    oqituvchi: "O'qituvchi",
+    oquvchi: "O'quvchi",
+  };
+
+
   return (
     <div className="min-h-screen bg-background">
       <AppHeader />
@@ -374,6 +410,13 @@ export default function AdminDashboard() {
                                     Blokdan chiqarish
                                   </DropdownMenuItem>
                                 )}
+                                <DropdownMenuItem onSelect={() => openRoleDialog(u)}>
+                                  <UserCog className="mr-2 h-4 w-4" />
+                                  Rolni o'zgartirish
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+
+
                                 <DropdownMenuItem disabled={u.role === "admin"} onSelect={() => setConfirmBlock(u)}>
                                   <Ban className="mr-2 h-4 w-4" />
                                   Foydalanuvchini bloklash
@@ -671,6 +714,48 @@ export default function AdminDashboard() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Change role */}
+      <Dialog open={!!roleUser} onOpenChange={(o) => !o && setRoleUser(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <UserCog className="h-5 w-5" />
+              Rolni o'zgartirish
+            </DialogTitle>
+            <DialogDescription>
+              {roleUser?.full_name || roleUser?.email} uchun yangi rolni tanlang.
+              Hozirgi rol: <strong>{roleUser?.role ? ROLE_LABEL[roleUser.role] : "—"}</strong>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label>Yangi rol</Label>
+            <Select value={newRole} onValueChange={setNewRole}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="admin">Admin</SelectItem>
+                <SelectItem value="oqituvchi">O'qituvchi</SelectItem>
+                <SelectItem value="oquvchi">O'quvchi</SelectItem>
+              </SelectContent>
+            </Select>
+            {newRole === "admin" && (
+              <p className="text-xs text-destructive">
+                Diqqat: admin huquqi to'liq boshqaruvni beradi.
+              </p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRoleUser(null)}>Bekor</Button>
+            <Button onClick={handleSaveRole} disabled={savingRole || newRole === roleUser?.role}>
+              {savingRole && <Loader2 className="h-4 w-4 animate-spin" />}
+              Saqlash
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
+
