@@ -409,11 +409,13 @@ export default function AdminDashboard() {
                                     <ShieldCheck className="mr-2 h-4 w-4" />
                                     Blokdan chiqarish
                                   </DropdownMenuItem>
+                                )}
                                 <DropdownMenuItem onSelect={() => openRoleDialog(u)}>
                                   <UserCog className="mr-2 h-4 w-4" />
                                   Rolni o'zgartirish
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
+
 
                                 <DropdownMenuItem disabled={u.role === "admin"} onSelect={() => setConfirmBlock(u)}>
                                   <Ban className="mr-2 h-4 w-4" />
