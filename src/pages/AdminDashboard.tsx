@@ -101,6 +101,9 @@ export default function AdminDashboard() {
   const [teacherTestsUser, setTeacherTestsUser] = useState<UserRow | null>(null);
   const [viewQuestions, setViewQuestions] = useState<QuestionRow[]>([]);
   const [loadingQuestions, setLoadingQuestions] = useState(false);
+  const [roleUser, setRoleUser] = useState<UserRow | null>(null);
+  const [newRole, setNewRole] = useState<string>("oquvchi");
+  const [savingRole, setSavingRole] = useState(false);
 
   const load = async () => {
     setLoading(true);
