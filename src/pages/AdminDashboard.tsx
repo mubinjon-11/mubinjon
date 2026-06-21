@@ -286,17 +286,6 @@ export default function AdminDashboard() {
     oquvchi: "O'quvchi",
   };
 
-  // REPLACE_MARKER_OPENVIEW
-    setViewTest(t);
-    setLoadingQuestions(true);
-    const { data } = await supabase
-      .from("questions")
-      .select("id, question, options, correct_index, position")
-      .eq("test_id", t.id)
-      .order("position", { ascending: true });
-    setViewQuestions((data as any) ?? []);
-    setLoadingQuestions(false);
-  };
 
   return (
     <div className="min-h-screen bg-background">
