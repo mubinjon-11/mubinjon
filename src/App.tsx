@@ -64,6 +64,7 @@ const App = () => (
 
             <Route path="*" element={<NotFound />} />
           </Routes>
+          <BlockedOverlay />
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
