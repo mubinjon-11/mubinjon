@@ -4,8 +4,10 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/hooks/useAuth";
+import { ThemeProvider } from "@/hooks/useTheme";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { BlockedOverlay } from "@/components/BlockedOverlay";
+import Profile from "./pages/Profile";
 import Landing from "./pages/Landing";
 import Auth from "./pages/Auth";
 import StudentDashboard from "./pages/StudentDashboard";
@@ -28,6 +30,7 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
+    <ThemeProvider>
     <TooltipProvider>
       <Toaster />
       <Sonner />
@@ -62,12 +65,16 @@ const App = () => (
             <Route path="/yechilgan" element={<ProtectedRoute role={["oquvchi", "oqituvchi", "admin"]}><SolvedTests /></ProtectedRoute>} />
             <Route path="/yechilgan/:resultId" element={<ProtectedRoute role={["oquvchi", "oqituvchi", "admin"]}><SolvedTestDetail /></ProtectedRoute>} />
 
+            {/* Profile — all authenticated roles */}
+            <Route path="/profil" element={<ProtectedRoute role={["oquvchi", "oqituvchi", "admin"]}><Profile /></ProtectedRoute>} />
+
             <Route path="*" element={<NotFound />} />
           </Routes>
           <BlockedOverlay />
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 
