@@ -14,6 +14,63 @@ export type Database = {
   }
   public: {
     Tables: {
+      achievements: {
+        Row: {
+          code: string
+          created_at: string
+          description: string
+          icon: string
+          id: string
+          name: string
+          xp_reward: number
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          description: string
+          icon?: string
+          id?: string
+          name: string
+          xp_reward?: number
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          description?: string
+          icon?: string
+          id?: string
+          name?: string
+          xp_reward?: number
+        }
+        Relationships: []
+      }
+      certificates: {
+        Row: {
+          id: string
+          issued_at: string
+          level: string
+          score: number | null
+          subject: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          issued_at?: string
+          level: string
+          score?: number | null
+          subject: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          issued_at?: string
+          level?: string
+          score?: number | null
+          subject?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       learning_progress: {
         Row: {
           best_percentage: number
@@ -91,6 +148,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          avatar_url: string | null
           blocked_until: string | null
           created_at: string
           email: string | null
@@ -99,6 +157,7 @@ export type Database = {
           is_blocked: boolean
         }
         Insert: {
+          avatar_url?: string | null
           blocked_until?: string | null
           created_at?: string
           email?: string | null
@@ -107,6 +166,7 @@ export type Database = {
           is_blocked?: boolean
         }
         Update: {
+          avatar_url?: string | null
           blocked_until?: string | null
           created_at?: string
           email?: string | null
@@ -243,6 +303,35 @@ export type Database = {
         }
         Relationships: []
       }
+      user_achievements: {
+        Row: {
+          achievement_id: string
+          id: string
+          unlocked_at: string
+          user_id: string
+        }
+        Insert: {
+          achievement_id: string
+          id?: string
+          unlocked_at?: string
+          user_id: string
+        }
+        Update: {
+          achievement_id?: string
+          id?: string
+          unlocked_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_achievements_achievement_id_fkey"
+            columns: ["achievement_id"]
+            isOneToOne: false
+            referencedRelation: "achievements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -261,6 +350,39 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
+        }
+        Relationships: []
+      }
+      user_stats: {
+        Row: {
+          created_at: string
+          current_streak: number
+          last_activity_date: string | null
+          level: number
+          longest_streak: number
+          updated_at: string
+          user_id: string
+          xp: number
+        }
+        Insert: {
+          created_at?: string
+          current_streak?: number
+          last_activity_date?: string | null
+          level?: number
+          longest_streak?: number
+          updated_at?: string
+          user_id: string
+          xp?: number
+        }
+        Update: {
+          created_at?: string
+          current_streak?: number
+          last_activity_date?: string | null
+          level?: number
+          longest_streak?: number
+          updated_at?: string
+          user_id?: string
+          xp?: number
         }
         Relationships: []
       }
